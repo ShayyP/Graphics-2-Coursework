@@ -31,9 +31,13 @@ void Graphics2::CreateSceneGraph()
 	sceneGraph->Add(rightLeg);
 }
 
-XMFLOAT4X4* Graphics2::RotateAround(XMFLOAT4X4* WorldTransform, float angle)
+XMMATRIX Graphics2::RotateAround(XMFLOAT4X4* worldTransform, XMVECTOR axis, float angle)
 {
-	return nullptr;
+	XMMATRIX offSet = XMMatrixTranslation(0, 0, 0);
+	XMMATRIX rotation = XMMatrixRotationAxis(axis, angle * XM_PI / 180.f);
+	XMMATRIX positioning = XMMatrixTranslation(worldTransform->_41, worldTransform->_42, worldTransform->_43);
+	XMMATRIX scaling = XMMatrixScaling(worldTransform->_11, worldTransform->_22, worldTransform->_33);
+	return offSet * rotation * positioning * scaling;
 }
 
 void Graphics2::UpdateSceneGraph()
@@ -45,8 +49,8 @@ void Graphics2::UpdateSceneGraph()
 
 	_rotation += 1.0f;
 
-	sceneGraph->SetWorldTransform(XMMatrixRotationAxis(XMVectorSet(0.0f, 1.0f, 0.0f, 1.0f), _rotation * 0.5f * XM_PI / 180.0f));
+	sceneGraph->SetWorldTransform(XMMatrixRotationAxis(XMVectorSet(0.0f, 1.0f, 0.0f, 1.0f), _rotation * XM_PI / 180.0f));
 
 	SceneNodePointer leftArm = sceneGraph->Find(L"Left Arm");
-	leftArm->SetWorldTransform(XMLoadFloat4x4(leftArm->GetWorldTransform()) * XMMatrixRotationAxis(XMVectorSet(1.0f, 0.0f, 0.0f, 1.0f), 0.5f * XM_PI / 180.0f));
+	leftArm->SetWorldTransform(RotateAround(leftArm->GetWorldTransform(), XMVectorSet(1.0f, 0.0f, 0.0f, 1.0f), _rotation));
 }

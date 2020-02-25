@@ -1,8 +1,2 @@
-﻿  Cube.cpp
-  Framework.cpp
-  DirectXFramework.cpp
-  Graphics2.cpp
-  SceneGraph.cpp
-  WICTextureLoader.cpp
-  Generating Code...
+﻿  Graphics2.cpp
   Graphics2.vcxproj -> D:\Repo\Graphics-2-Coursework\DirectXFramework\x64\Debug\Graphics2.exe
