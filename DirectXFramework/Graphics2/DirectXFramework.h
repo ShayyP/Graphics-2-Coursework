@@ -4,6 +4,7 @@
 #include "DirectXCore.h"
 #include "SceneGraph.h"
 #include "WICTextureLoader.h"
+#include "ResourceManager.h"
 
 struct Vertex
 {
@@ -16,9 +17,15 @@ struct CBUFFER
 {
 	XMMATRIX    CompleteTransformation;
 	XMMATRIX	WorldTransformation;
+	XMFLOAT4	CameraPosition;
 	XMVECTOR    LightVector;
-	XMFLOAT4    LightColour;
-	XMFLOAT4    AmbientColour;
+	XMFLOAT4    LightColor;
+	XMFLOAT4    AmbientColor;
+	XMFLOAT4    DiffuseCoefficient;
+	XMFLOAT4	SpecularCoefficient;
+	float		Shininess;
+	float		Opacity;
+	float       Padding[2];
 };
 
 class DirectXFramework : public Framework
@@ -47,6 +54,8 @@ public:
 
 	void								SetBackgroundColour(XMFLOAT4 backgroundColour);
 
+	inline shared_ptr<ResourceManager> GetResourceManager() { return _resourceManager; }
+
 private:
 	ComPtr<ID3D11Device>				_device;
 	ComPtr<ID3D11DeviceContext>			_deviceContext;
@@ -56,6 +65,8 @@ private:
 	ComPtr<ID3D11DepthStencilView>		_depthStencilView;
 
 	D3D11_VIEWPORT						_screenViewport;
+
+	shared_ptr<ResourceManager> _resourceManager;
 
 	// Our vectors and matrices.  Note that we cannot use
 	// XMVECTOR and XMMATRIX for class variables since they need

@@ -1,2 +1,13 @@
-﻿  Graphics2.cpp
-  Graphics2.vcxproj -> D:\Repo\Graphics-2-Coursework\DirectXFramework\x64\Debug\Graphics2.exe
+﻿  Cube.cpp
+  DirectXFramework.cpp
+  Graphics2.cpp
+  MeshNode.cpp
+  MeshRenderer.cpp
+  ResourceManager.cpp
+  SceneGraph.cpp
+  Generating Code...
+  Graphics2.vcxproj -> E:\Year 2\Graphics 2\Repo\Graphics-2-Coursework\DirectXFramework\x64\Debug\Graphics2.exe
+  E:\Year 2\Graphics 2\Repo\Graphics-2-Coursework\DirectXFramework\Graphics2\assimp-vc140-mt.dll
+  E:\Year 2\Graphics 2\Repo\Graphics-2-Coursework\DirectXFramework\Graphics2\zlib.dll
+          2 file(s) copied.
+          1 file(s) copied.

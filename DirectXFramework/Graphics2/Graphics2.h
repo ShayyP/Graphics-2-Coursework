@@ -6,7 +6,6 @@ class Graphics2 : public DirectXFramework
 {
 public:
 	void CreateSceneGraph();
-	XMMATRIX RotateAround(XMFLOAT4X4* worldTransform, XMVECTOR axis, float angle);
 	void UpdateSceneGraph();
 private:
 	float _rotation = 0;

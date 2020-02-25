@@ -1,0 +1,20 @@
+﻿  Cube.cpp
+E:\Year 2\Graphics 2\Repo\Graphics-2-Coursework\DirectXFramework\Graphics2\Cube.cpp(252,1): fatal error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "stdafx.h"' to your source?
+  Framework.cpp
+E:\Year 2\Graphics 2\Repo\Graphics-2-Coursework\DirectXFramework\Graphics2\Framework.cpp(234,1): fatal error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "stdafx.h"' to your source?
+  DirectXFramework.cpp
+E:\Year 2\Graphics 2\Repo\Graphics-2-Coursework\DirectXFramework\Graphics2\DirectXFramework.cpp(231,1): fatal error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "stdafx.h"' to your source?
+  Graphics2.cpp
+E:\Year 2\Graphics 2\Repo\Graphics-2-Coursework\DirectXFramework\Graphics2\Graphics2.cpp(72,1): fatal error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "stdafx.h"' to your source?
+  Mesh.cpp
+E:\Year 2\Graphics 2\Repo\Graphics-2-Coursework\DirectXFramework\Graphics2\Mesh.cpp(71,1): fatal error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "stdafx.h"' to your source?
+  MeshNode.cpp
+E:\Year 2\Graphics 2\Repo\Graphics-2-Coursework\DirectXFramework\Graphics2\MeshNode.cpp(30,1): fatal error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "stdafx.h"' to your source?
+  MeshRenderer.cpp
+E:\Year 2\Graphics 2\Repo\Graphics-2-Coursework\DirectXFramework\Graphics2\MeshRenderer.cpp(237,1): fatal error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "stdafx.h"' to your source?
+  ResourceManager.cpp
+E:\Year 2\Graphics 2\Repo\Graphics-2-Coursework\DirectXFramework\Graphics2\ResourceManager.cpp(473,1): fatal error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "stdafx.h"' to your source?
+  SceneGraph.cpp
+E:\Year 2\Graphics 2\Repo\Graphics-2-Coursework\DirectXFramework\Graphics2\SceneGraph.cpp(62,1): fatal error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "stdafx.h"' to your source?
+  WICTextureLoader.cpp
+E:\Year 2\Graphics 2\Repo\Graphics-2-Coursework\DirectXFramework\Graphics2\WICTextureLoader.cpp(935,1): fatal error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "stdafx.h"' to your source?
