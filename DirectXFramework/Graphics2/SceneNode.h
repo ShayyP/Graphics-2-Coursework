@@ -24,6 +24,7 @@ public:
 	virtual void Shutdown() = 0;
 
 	void SetWorldTransform(FXMMATRIX& worldTransformation) { XMStoreFloat4x4(&_worldTransformation, worldTransformation); }
+	XMFLOAT4X4* GetWorldTransform() { return &_worldTransformation; }
 		
 	// Although only required in the composite class, these are provided
 	// in order to simplify the code base.

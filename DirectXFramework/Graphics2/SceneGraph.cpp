@@ -12,7 +12,7 @@ bool SceneGraph::Initialise(void)
 
 void SceneGraph::Update(FXMMATRIX& currentWorldTransformation)
 {
-	XMStoreFloat4x4(&_combinedWorldTransformation, XMLoadFloat4x4(&_worldTransformation) * currentWorldTransformation);
+	SceneNode::Update(currentWorldTransformation);
 	for(SceneNodePointer child : _children) {
 		child->Update(XMLoadFloat4x4(&_combinedWorldTransformation));
 	}
