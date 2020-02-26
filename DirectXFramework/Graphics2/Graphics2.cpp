@@ -35,6 +35,9 @@ void Graphics2::CreateSceneGraph()
 
 	shared_ptr<MeshNode> plane = make_shared<MeshNode>(L"Plane", L"Textures\\Plane\\Bonanza.3DS");
 	sceneGraph->Add(plane);
+
+	SceneNodePointer terrain = make_shared<TerrainNode>(L"Terrain", L"");
+	sceneGraph->Add(terrain);
 }
 
 void Graphics2::UpdateSceneGraph()
@@ -46,8 +49,8 @@ void Graphics2::UpdateSceneGraph()
 
 	_rotation += 1.0f;
 
-	sceneGraph->SetWorldTransform(XMMatrixRotationAxis(XMVectorSet(0.0f, 1.0f, 0.0f, 1.0f), _rotation * XM_PI / 180.0f));
+	//sceneGraph->SetWorldTransform(XMMatrixRotationAxis(XMVectorSet(0.0f, 1.0f, 0.0f, 1.0f), _rotation * XM_PI / 180.0f));
 
 	SceneNodePointer plane = sceneGraph->Find(L"Plane");
-	plane->SetWorldTransform(XMMatrixRotationAxis(XMVectorSet(1.0f, 0.0f, 0.0f, 1.0f), 90 * XM_PI / 180.0f) * XMMatrixTranslation(50, 0, 0));
+	plane->SetWorldTransform(XMMatrixRotationAxis(XMVectorSet(1.0f, 0.0f, 0.0f, 1.0f), 90 * XM_PI / 180.0f) * XMMatrixTranslation(50, 0, 0) * XMMatrixRotationAxis(XMVectorSet(0.0f, 1.0f, 0.0f, 1.0f), _rotation * XM_PI / 180.0f));
 }

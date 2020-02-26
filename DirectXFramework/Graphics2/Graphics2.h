@@ -1,6 +1,7 @@
 #pragma once
 #include "DirectXFramework.h"
 #include "Cube.h"
+#include "TerrainNode.h"
 
 class Graphics2 : public DirectXFramework
 {
