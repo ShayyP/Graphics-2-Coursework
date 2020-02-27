@@ -67,33 +67,38 @@ void TerrainNode::BuildGeometryBuffers()
 	{
 		for (int z = 0; z < 1024; z++)
 		{
-			VERTEX newPoint;
-			newPoint.Position = (XMFLOAT3((float)(x * 10) - 5120, 0.0f, (float)(z * 10) - 5120));
-			newPoint.Normal = (XMFLOAT3(0.0f, 0.0f, 0.0f));
-			newPoint.TexCoord = (XMFLOAT2(0.0f, 0.0f));
-
+			VERTEX newPoint = VERTEX(XMFLOAT3((float)(x * 10) - 5120, 0.0f, (float)(z * 10) - 5120), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2(0.0f, 0.0f));
 			_vertices.push_back(newPoint);
 		}
 	}
 
-	for (int x = 0; x < 1024; x++)
+	vector<VERTEX> temp;
+	
+	for (int x = 0; x < 1023; x++)
 	{
-		for (int z = 0; z < 1024; z++)
+		for (int z = 0; z < 1023; z++)
 		{
-			UINT v3 = (x * 1024) + z;
-			UINT v1 = v3 + 1;
-			UINT v2 = v1 + 1024;
-			UINT v4 = v2 - 1;
+			UINT v1 = (x * 1023) + z + 1;
+			UINT v2 = v1 + 1023;
+			UINT v3 = v1 - 1;
+			UINT v4 = v3 + 1023;
 
 			_indices.push_back(v1);
+			temp.push_back(_vertices[v1]);
 			_indices.push_back(v2);
+			temp.push_back(_vertices[v2]);
 			_indices.push_back(v3);
+			temp.push_back(_vertices[v3]);
 
 			_indices.push_back(v3);
+			temp.push_back(_vertices[v3]);
 			_indices.push_back(v2);
+			temp.push_back(_vertices[v2]);
 			_indices.push_back(v4);
+			temp.push_back(_vertices[v4]);
 		}
 	}
+	
 
 	// Setup the structure that specifies how big the vertex 
     // buffer should be

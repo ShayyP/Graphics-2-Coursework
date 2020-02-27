@@ -8,6 +8,18 @@
 
 struct VERTEX
 {
+	VERTEX(XMFLOAT3 position, XMFLOAT3 normal, XMFLOAT2 texCoord)
+	{
+		Position = position;
+		Normal = normal;
+		TexCoord = texCoord;
+	}
+	VERTEX()
+	{
+		Position = XMFLOAT3(0.0f, 0.0f, 0.0f);
+		Normal = XMFLOAT3(0.0f, 0.0f, 0.0f);
+		TexCoord = XMFLOAT2(0.0f, 0.0f);
+	}
 	XMFLOAT3 Position;
 	XMFLOAT3 Normal;
 	XMFLOAT2 TexCoord;
