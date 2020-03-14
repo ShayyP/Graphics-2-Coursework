@@ -5,7 +5,7 @@ Graphics2 app;
 
 void Graphics2::CreateSceneGraph()
 {
-	_inputMode = Controller;
+	_inputMode = Keyboard;
 	SceneGraphPointer sceneGraph = GetSceneGraph();
 	GetCamera()->SetCameraPosition(0.0f, 50.0f, -500.0f);
 
@@ -100,6 +100,26 @@ void Graphics2::HandleKeyboardInput()
 		GetCamera()->SetLeftRight(-_keyboardSpeedModifier);
 	}
 	// Rotation
+	// Using mouse
+	POINT cursorPos;
+	GetCursorPos(&cursorPos);
+	POINT centerPos;
+	centerPos.x = DirectXFramework::GetWindowWidth() / 2;
+	centerPos.y = DirectXFramework::GetWindowHeight() / 2;
+	if (ScreenToClient(DirectXFramework::GetHWnd(), &cursorPos))
+	{
+		GetCamera()->SetTotalYaw(-(centerPos.x - cursorPos.x) / _mouseSpeedLimiter);
+		GetCamera()->SetTotalPitch(-(centerPos.y - cursorPos.y) / _mouseSpeedLimiter);
+	}
+	// Reset mouse pos
+	if (GetAsyncKeyState(VK_RBUTTON) < 0)
+	{
+		ClientToScreen(DirectXFramework::GetHWnd(), &centerPos);
+		SetCursorPos(centerPos.x, centerPos.y);
+	}
+
+	/*
+	// Using arrow keys
 	// Right arrow key
 	if (GetAsyncKeyState(VK_RIGHT) < 0)
 	{
@@ -120,6 +140,7 @@ void Graphics2::HandleKeyboardInput()
 	{
 		GetCamera()->SetPitch(_keyboardSpeedModifier);
 	}
+	*/
 }
 
 void Graphics2::HandleControllerInput()

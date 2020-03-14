@@ -19,6 +19,7 @@ private:
 	wchar_t* _woodblockTexture = L"Textures/woodblock.bmp";
 	float _keyboardSpeedModifier = 2.0f;
 	float _cameraSpeedLimiter = 10000.0f;
+	float _mouseSpeedLimiter = 10.0f;
 	InputMode _inputMode;
 };
 
