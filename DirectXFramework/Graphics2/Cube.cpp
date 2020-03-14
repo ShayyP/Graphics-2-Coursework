@@ -14,7 +14,7 @@ bool Cube::Initialise()
 void Cube::Render()
 {
 	// Calculate the world x view x projection transformation
-	XMMATRIX completeTransformation = XMLoadFloat4x4(&_combinedWorldTransformation) * DirectXFramework::GetDXFramework()->GetViewTransformation() * DirectXFramework::GetDXFramework()->GetProjectionTransformation();
+	XMMATRIX completeTransformation = XMLoadFloat4x4(&_combinedWorldTransformation) * DirectXFramework::GetDXFramework()->GetCamera()->GetViewMatrix() * DirectXFramework::GetDXFramework()->GetProjectionTransformation();
 
 	// Draw the first cube
 	CBUFFER cBuffer;

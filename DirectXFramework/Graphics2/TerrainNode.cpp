@@ -14,7 +14,7 @@ bool TerrainNode::Initialise()
 void TerrainNode::Render()
 {
 	// Calculate the world x view x projection transformation
-	XMMATRIX completeTransformation = XMLoadFloat4x4(&_combinedWorldTransformation) * DirectXFramework::GetDXFramework()->GetViewTransformation() * DirectXFramework::GetDXFramework()->GetProjectionTransformation();
+	XMMATRIX completeTransformation = XMLoadFloat4x4(&_combinedWorldTransformation) * DirectXFramework::GetDXFramework()->GetCamera()->GetViewMatrix() * DirectXFramework::GetDXFramework()->GetProjectionTransformation();
 
 	// Draw the first cube
 	CBUFFER cBuffer;
@@ -67,38 +67,25 @@ void TerrainNode::BuildGeometryBuffers()
 	{
 		for (int z = 0; z < 1024; z++)
 		{
-			VERTEX newPoint = VERTEX(XMFLOAT3((float)(x * 10) - 5120, 0.0f, (float)(z * 10) - 5120), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2(0.0f, 0.0f));
-			_vertices.push_back(newPoint);
-		}
-	}
+			_vertices.push_back(VERTEX(XMFLOAT3((float)(x * 10) - 5120, 0.0f, (float)((z + 1) * 10) - 5120), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2(0.0f, 0.0f))); // v1
+			_vertices.push_back(VERTEX(XMFLOAT3((float)((x + 1) * 10) - 5120, 0.0f, (float)((z + 1) * 10) - 5120), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2(0.0f, 0.0f))); // v2
+			_vertices.push_back(VERTEX(XMFLOAT3((float)(x * 10) - 5120, 0.0f, (float)(z * 10) - 5120), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2(0.0f, 0.0f))); // v3
+			_vertices.push_back(VERTEX(XMFLOAT3((float)((x + 1) * 10) - 5120, 0.0f, (float)(z * 10) - 5120), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2(0.0f, 0.0f))); // v4
 
-	vector<VERTEX> temp;
-	
-	for (int x = 0; x < 1023; x++)
-	{
-		for (int z = 0; z < 1023; z++)
-		{
-			UINT v1 = (x * 1023) + z + 1;
-			UINT v2 = v1 + 1023;
-			UINT v3 = v1 - 1;
-			UINT v4 = v3 + 1023;
+			UINT v1 = _vertices.size() - 4;
+			UINT v2 = v1 + 1;
+			UINT v3 = v2 + 1;
+			UINT v4 = v3 + 1;
 
 			_indices.push_back(v1);
-			temp.push_back(_vertices[v1]);
 			_indices.push_back(v2);
-			temp.push_back(_vertices[v2]);
 			_indices.push_back(v3);
-			temp.push_back(_vertices[v3]);
 
 			_indices.push_back(v3);
-			temp.push_back(_vertices[v3]);
 			_indices.push_back(v2);
-			temp.push_back(_vertices[v2]);
 			_indices.push_back(v4);
-			temp.push_back(_vertices[v4]);
 		}
-	}
-	
+	}	
 
 	// Setup the structure that specifies how big the vertex 
     // buffer should be

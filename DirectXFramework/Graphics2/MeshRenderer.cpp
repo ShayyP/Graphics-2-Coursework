@@ -92,7 +92,8 @@ void MeshRenderer::Render()
 	_deviceContext->RSSetState(_noCullRasteriserState.Get());
 
 	XMMATRIX projectionTransformation = DirectXFramework::GetDXFramework()->GetProjectionTransformation();
-	XMMATRIX viewTransformation = DirectXFramework::GetDXFramework()->GetViewTransformation();
+	XMMATRIX viewTransformation = DirectXFramework::GetDXFramework()->GetCamera()->GetViewMatrix();
+
 
 	XMMATRIX completeTransformation = XMLoadFloat4x4(&_worldTransformation) * viewTransformation * projectionTransformation;
 

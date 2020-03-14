@@ -5,6 +5,8 @@
 #include "SceneGraph.h"
 #include "WICTextureLoader.h"
 #include "ResourceManager.h"
+#include "Camera.h"
+#include "GamePadController.h"
 
 struct Vertex
 {
@@ -48,13 +50,12 @@ public:
 	inline SceneGraphPointer			GetSceneGraph() { return _sceneGraph; }
 	inline ComPtr<ID3D11Device>			GetDevice() { return _device; }
 	inline ComPtr<ID3D11DeviceContext>	GetDeviceContext() { return _deviceContext; }
-
-	XMMATRIX							GetViewTransformation();
+	inline shared_ptr<ResourceManager>  GetResourceManager() { return _resourceManager; }
+	inline shared_ptr<Camera>           GetCamera() { return _camera; }
+	inline shared_ptr<GamePadController> GetController() { return _controller; }
 	XMMATRIX							GetProjectionTransformation();
 
 	void								SetBackgroundColour(XMFLOAT4 backgroundColour);
-
-	inline shared_ptr<ResourceManager> GetResourceManager() { return _resourceManager; }
 
 private:
 	ComPtr<ID3D11Device>				_device;
@@ -73,13 +74,9 @@ private:
 	// to be aligned on 16-byte boundaries and the compiler cannot
 	// guarantee this for class variables
 
-	// For now, we are storing our camera vectors and matrix here.
-	// We will move it to a separate Camera class later
-	XMFLOAT4							_eyePosition;
-	XMFLOAT4							_focalPointPosition;
-	XMFLOAT4							_upVector;
+	shared_ptr<Camera>                  _camera;
+	shared_ptr<GamePadController>       _controller;
 
-	XMFLOAT4X4							_viewTransformation;
 	XMFLOAT4X4							_projectionTransformation;
 
 	SceneGraphPointer					_sceneGraph;
