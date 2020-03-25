@@ -38,7 +38,7 @@ void Graphics2::CreateSceneGraph()
 	shared_ptr<MeshNode> plane = make_shared<MeshNode>(L"Plane", L"Textures\\Plane\\Bonanza.3DS");
 	sceneGraph->Add(plane);
 
-	shared_ptr<TerrainNode> terrain = make_shared<TerrainNode>(L"Terrain", L"");
+	shared_ptr<TerrainNode> terrain = make_shared<TerrainNode>(L"Terrain", L"HeightMaps\\Example_heightMap.RAW");
 	sceneGraph->Add(terrain);
 }
 
@@ -100,6 +100,7 @@ void Graphics2::HandleKeyboardInput()
 		GetCamera()->SetLeftRight(-_keyboardSpeedModifier);
 	}
 	// Rotation
+	/*
 	// Using mouse
 	POINT cursorPos;
 	GetCursorPos(&cursorPos);
@@ -117,30 +118,28 @@ void Graphics2::HandleKeyboardInput()
 		ClientToScreen(DirectXFramework::GetHWnd(), &centerPos);
 		SetCursorPos(centerPos.x, centerPos.y);
 	}
-
-	/*
+	*/
 	// Using arrow keys
-	// Right arrow key
-	if (GetAsyncKeyState(VK_RIGHT) < 0)
+	// E key
+	if (GetAsyncKeyState(0x45) < 0)
 	{
 		GetCamera()->SetYaw(_keyboardSpeedModifier);
 	}
-	// Left arrow key
-	if (GetAsyncKeyState(VK_LEFT) < 0)
+	// Q key
+	if (GetAsyncKeyState(0x51) < 0)
 	{
 		GetCamera()->SetYaw(-_keyboardSpeedModifier);
 	}
-	// Up arrow key
-	if (GetAsyncKeyState(VK_UP) < 0)
+	// Shift key
+	if (GetAsyncKeyState(VK_SHIFT) < 0)
 	{
 		GetCamera()->SetPitch(-_keyboardSpeedModifier);
 	}
-	// Down arrow key
-	if (GetAsyncKeyState(VK_DOWN) < 0)
+	// CTRL key
+	if (GetAsyncKeyState(VK_CONTROL) < 0)
 	{
 		GetCamera()->SetPitch(_keyboardSpeedModifier);
 	}
-	*/
 }
 
 void Graphics2::HandleControllerInput()

@@ -25,6 +25,28 @@ struct VERTEX
 	XMFLOAT2 TexCoord;
 };
 
+struct TerrainVertex
+{
+	TerrainVertex(XMFLOAT3 position, XMFLOAT3 normal, XMFLOAT2 texCoord, XMFLOAT2 blendMapTexCoord)
+	{
+		Position = position;
+		Normal = normal;
+		TexCoord = texCoord;
+		BlendMapTexCoord = blendMapTexCoord;
+	}
+	TerrainVertex()
+	{
+		Position = XMFLOAT3(0.0f, 0.0f, 0.0f);
+		Normal = XMFLOAT3(0.0f, 0.0f, 0.0f);
+		TexCoord = XMFLOAT2(0.0f, 0.0f);
+		BlendMapTexCoord = XMFLOAT2(0.0f, 0.0f);
+	}
+	XMFLOAT3 Position;
+	XMFLOAT3 Normal;
+	XMFLOAT2 TexCoord;
+	XMFLOAT2 BlendMapTexCoord;
+};
+
 struct MeshResourceStruct
 {
 	unsigned int			ReferenceCount;

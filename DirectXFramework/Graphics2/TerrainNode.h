@@ -1,5 +1,6 @@
 #pragma once
 #include "DirectXFramework.h"
+#include "DDSTextureLoader.h"
 
 class TerrainNode : public SceneNode
 {
@@ -15,11 +16,16 @@ public:
 
 	void BuildRendererStates();
 
+	bool LoadHeightMap(wstring heightMapFilename);
+
 	void BuildGeometryBuffers();
 	void BuildShaders();
 	void BuildVertexLayout();
 	void BuildConstantBuffer();
 	void BuildTexture();
+
+	void LoadTerrainTextures();
+	void GenerateBlendMap();
 
 private:
 	wstring _heightMapPath;
@@ -38,5 +44,10 @@ private:
 	ComPtr<ID3D11Buffer> _constantBuffer;
 	ComPtr<ID3D11RasterizerState> _defaultRasteriserState;
 	ComPtr<ID3D11RasterizerState> _wireframeRasteriserState;
+	ComPtr<ID3D11ShaderResourceView> _texturesResourceView;
+	ComPtr<ID3D11ShaderResourceView> _blendMapResourceView;
+	vector<float> _heightValues;
+	unsigned int _numberOfXPoints = 1024;
+	unsigned int _numberOfZPoints = 1024;
 };
 

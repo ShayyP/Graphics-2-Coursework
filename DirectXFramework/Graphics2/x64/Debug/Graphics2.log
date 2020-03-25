@@ -1,4 +1,8 @@
-﻿  Graphics2.cpp
+﻿  TerrainNode.cpp
+E:\Year 2\Graphics 2\Repo\Graphics-2-Coursework\DirectXFramework\Graphics2\TerrainNode.cpp(46,51): warning C4267: 'argument': conversion from 'size_t' to 'UINT', possible loss of data
+E:\Year 2\Graphics 2\Repo\Graphics-2-Coursework\DirectXFramework\Graphics2\TerrainNode.cpp(115,34): warning C4267: 'initializing': conversion from 'size_t' to 'UINT', possible loss of data
+E:\Year 2\Graphics 2\Repo\Graphics-2-Coursework\DirectXFramework\Graphics2\TerrainNode.cpp(175,70): warning C4267: '=': conversion from 'size_t' to 'UINT', possible loss of data
+E:\Year 2\Graphics 2\Repo\Graphics-2-Coursework\DirectXFramework\Graphics2\TerrainNode.cpp(193,66): warning C4267: '=': conversion from 'size_t' to 'UINT', possible loss of data
   Graphics2.vcxproj -> E:\Year 2\Graphics 2\Repo\Graphics-2-Coursework\DirectXFramework\x64\Debug\Graphics2.exe
   E:\Year 2\Graphics 2\Repo\Graphics-2-Coursework\DirectXFramework\Graphics2\assimp-vc140-mt.dll
   E:\Year 2\Graphics 2\Repo\Graphics-2-Coursework\DirectXFramework\Graphics2\zlib.dll

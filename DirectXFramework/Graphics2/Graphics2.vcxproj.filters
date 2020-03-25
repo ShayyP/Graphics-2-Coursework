@@ -75,6 +75,9 @@
     <ClInclude Include="GamePadController.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="DDSTextureLoader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Graphics2.rc">
@@ -129,5 +132,13 @@
     <ClCompile Include="GamePadController.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="DDSTextureLoader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="shader.hlsl" />
+    <FxCompile Include="TexturedShaders.hlsl" />
+    <FxCompile Include="TerrainShaders.hlsl" />
   </ItemGroup>
 </Project>
