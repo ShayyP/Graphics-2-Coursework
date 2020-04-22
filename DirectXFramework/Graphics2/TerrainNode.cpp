@@ -4,17 +4,16 @@
 bool TerrainNode::Initialise()
 {
 	BuildGeometryBuffers();
+
+	LoadTerrainTextures();
+
+	GenerateBlendMap();
+
 	BuildShaders();
 	BuildVertexLayout();
 	BuildConstantBuffer();
-	BuildTexture();
 
-	/*
-	LoadTerrainTextures();
-	GenerateBlendMap();
-	_deviceContext->PSSetShaderResources(0, 1, _blendMapResourceView.GetAddressOf());
-	_deviceContext->PSSetShaderResources(1, 1, _texturesResourceView.GetAddressOf());
-	*/
+    BuildRendererStates();
 
 	return true;
 }
@@ -24,26 +23,35 @@ void TerrainNode::Render()
 	// Calculate the world x view x projection transformation
 	XMMATRIX completeTransformation = XMLoadFloat4x4(&_combinedWorldTransformation) * DirectXFramework::GetDXFramework()->GetCamera()->GetViewMatrix() * DirectXFramework::GetDXFramework()->GetProjectionTransformation();
 
-	// Draw the first cube
+	// Update the constant buffer 
 	CBUFFER cBuffer;
 	cBuffer.CompleteTransformation = completeTransformation;
 	cBuffer.WorldTransformation = XMLoadFloat4x4(&_combinedWorldTransformation);
-	cBuffer.AmbientColor = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
-	cBuffer.LightVector = XMVector4Normalize(XMVectorSet(0.0f, 01.0f, 1.0f, 0.0f));
+	cBuffer.AmbientColor = XMFLOAT4(0.6f, 0.6f, 0.6f, 1.0f);
+	cBuffer.LightVector = XMVector4Normalize(XMVectorSet(1.0f, 1.0f, 0.0f, 0.0f));
 	cBuffer.LightColor = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+	XMStoreFloat4(&cBuffer.CameraPosition, DirectXFramework::GetDXFramework()->GetCamera()->GetCameraPosition());
 
-	// Update the constant buffer 
-	_deviceContext->VSSetConstantBuffers(0, 1, _constantBuffer.GetAddressOf());
-	_deviceContext->UpdateSubresource(_constantBuffer.Get(), 0, 0, &cBuffer, 0, 0);
+	_deviceContext->VSSetShader(_vertexShader.Get(), 0, 0);
+	_deviceContext->PSSetShader(_pixelShader.Get(), 0, 0);
+	_deviceContext->IASetInputLayout(_layout.Get());
 
-	// Now render the cube
-	UINT stride = sizeof(Vertex);
+	// Now render the terrain
+	UINT stride = sizeof(TerrainVertex);
 	UINT offset = 0;
 	_deviceContext->IASetVertexBuffers(0, 1, _vertexBuffer.GetAddressOf(), &stride, &offset);
 	_deviceContext->IASetIndexBuffer(_indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+	cBuffer.DiffuseCoefficient = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
+	cBuffer.SpecularCoefficient = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+	cBuffer.Shininess = 5.0f;
+	cBuffer.Opacity = 1.0f;
+	_deviceContext->UpdateSubresource(_constantBuffer.Get(), 0, 0, &cBuffer, 0, 0);
+	_deviceContext->VSSetConstantBuffers(0, 1, _constantBuffer.GetAddressOf());
+	_deviceContext->PSSetConstantBuffers(0, 1, _constantBuffer.GetAddressOf());
+	_deviceContext->PSSetShaderResources(0, 1, _blendMapResourceView.GetAddressOf());
+	_deviceContext->PSSetShaderResources(1, 1, _texturesResourceView.GetAddressOf());
 	_deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	_deviceContext->RSSetState(_wireframeRasteriserState.Get());
-	//BuildRendererStates();
+	_deviceContext->RSSetState(_defaultRasteriserState.Get());
 	_deviceContext->DrawIndexed(_indices.size(), 0, 0);
 }
 
@@ -94,24 +102,33 @@ bool TerrainNode::LoadHeightMap(wstring heightMapFilename)
 	return true;
 }
 
+float TerrainNode::Random(float min, float max)
+{
+	float random = ((float)rand()) / (float)RAND_MAX;
+	float range = max - min;
+	return (random * range) + min;
+}
+
 void TerrainNode::BuildGeometryBuffers()
 {
 	LoadHeightMap(_heightMapPath);
-	for (int x = 0; x < 1023; x++)
-	{
-		for (int z = 0; z < 1023; z++)
-		{
-			/*
-			_vertices.push_back(TerrainVertex(XMFLOAT3((float)(x * 10) - 5120, _heightValues[(x * 1024) + z + 1] * 1024, (float)((z + 1) * 10) - 5120), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2((x / 1023), ((z + 1) / 1023)), XMFLOAT2(0.0f, 0.0f))); // v1
-			_vertices.push_back(TerrainVertex(XMFLOAT3((float)((x + 1) * 10) - 5120, _heightValues[((x + 1) * 1024) + z + 1] * 1024, (float)((z + 1) * 10) - 5120), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2(((x + 1) / 1023), ((z + 1) / 1023)), XMFLOAT2(0.0f, 0.0f))); // v2
-			_vertices.push_back(TerrainVertex(XMFLOAT3((float)(x * 10) - 5120, _heightValues[(x * 1024) + z] * 1024, (float)(z * 10) - 5120), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2((x / 1023), (z / 1023)), XMFLOAT2(0.0f, 0.0f))); // v3
-			_vertices.push_back(TerrainVertex(XMFLOAT3((float)((x + 1) * 10) - 5120, _heightValues[((x + 1) * 1024) + z] * 1024, (float)(z * 10) - 5120), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2(((x + 1) / 1023), (z / 1023)), XMFLOAT2(0.0f, 0.0f))); // v4
-			*/
 
-			_vertices.push_back(VERTEX(XMFLOAT3((float)(x * 10) - 5120, _heightValues[(x * 1024) + z + 1] * 1024, (float)((z + 1) * 10) - 5120), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2(0.0f, 0.0f))); // v1
-			_vertices.push_back(VERTEX(XMFLOAT3((float)((x + 1) * 10) - 5120, _heightValues[((x + 1) * 1024) + z + 1] * 1024, (float)((z + 1) * 10) - 5120), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2(0.0f, 0.0f))); // v2
-			_vertices.push_back(VERTEX(XMFLOAT3((float)(x * 10) - 5120, _heightValues[(x * 1024) + z] * 1024, (float)(z * 10) - 5120), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2(0.0f, 0.0f))); // v3
-			_vertices.push_back(VERTEX(XMFLOAT3((float)((x + 1) * 10) - 5120, _heightValues[((x + 1) * 1024) + z] * 1024, (float)(z * 10) - 5120), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2(0.0f, 0.0f))); // v4
+	float offsetU = 1.0f / _numberOfXPoints;
+	float offsetV = 1.0f / _numberOfZPoints;
+
+	for (int x = 0; x < _numberOfXPoints - 1; x++)
+	{
+		for (int z = 0; z < _numberOfZPoints - 1; z++)
+		{
+			float U0 = Random(0.0f, 0.3f);
+			float U1 = Random(0.7f, 1.0f);
+			float V0 = Random(0.0f, 0.3f);
+			float V1 = Random(0.7f, 1.0f);
+			//								  Position         X                                    Y                                                                               Z                                     Normal                      TexCoord U  V   BlendMapTexCoord U            V
+			_vertices.push_back(TerrainVertex(XMFLOAT3((float)(x * _spacing) + _terrainStart,       _heightValues[(x * _numberOfXPoints) + z + 1] * _numberOfXPoints,       (float)((z + 1) * _spacing) + _terrainStart), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2(U0, V0), XMFLOAT2(x * offsetU,	      (z + 1) * offsetV))); // v1
+			_vertices.push_back(TerrainVertex(XMFLOAT3((float)((x + 1) * _spacing) + _terrainStart, _heightValues[((x + 1) * _numberOfXPoints) + z + 1] * _numberOfXPoints, (float)((z + 1) * _spacing) + _terrainStart), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2(U1, V0), XMFLOAT2((x + 1) * offsetU, (z + 1) * offsetV))); // v2
+			_vertices.push_back(TerrainVertex(XMFLOAT3((float)(x * _spacing) + _terrainStart,       _heightValues[(x * _numberOfXPoints) + z] * _numberOfXPoints,           (float)(z * _spacing) + _terrainStart),       XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2(U0, V1), XMFLOAT2(x * offsetU,		   z * offsetV))); // v3
+			_vertices.push_back(TerrainVertex(XMFLOAT3((float)((x + 1) * _spacing) + _terrainStart, _heightValues[((x + 1) * _numberOfXPoints) + z] * _numberOfXPoints,     (float)(z * _spacing) + _terrainStart),       XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2(U1, V1), XMFLOAT2((x + 1) * offsetU,  z * offsetV))); // v4
 
 			UINT v1 = _vertices.size() - 4;
 			UINT v2 = v1 + 1;
@@ -128,52 +145,92 @@ void TerrainNode::BuildGeometryBuffers()
 		}
 	}	
 
-	// Calculate vertex normals
-	vector<int> vertexContributingCount;
-	for (int i = 0; i < 1046529; i++)
+	// Calculating normals
+	int index = 0;
+
+	for (int x = 0; x < _numberOfXPoints - 1; x++)
 	{
-		vertexContributingCount.push_back(0);
+		for (int z = 0; z < _numberOfZPoints - 1; z++)
+		{
+			// Getting face normal
+			XMVECTOR v1 = XMLoadFloat3(&_vertices[index].Position);
+			XMVECTOR v2 = XMLoadFloat3(&_vertices[index + 1].Position);
+			XMVECTOR v3 = XMLoadFloat3(&_vertices[index + 2].Position);
+			XMVECTOR faceNormal = XMVector3Cross(v2 - v1, v3 - v1);
+			faceNormal = XMVector3Normalize(faceNormal);
+
+			// Add face normal to total in this square
+			XMStoreFloat3(&_vertices[index].Normal, XMLoadFloat3(&_vertices[index].Normal) + faceNormal);
+			XMStoreFloat3(&_vertices[index + 1].Normal, XMLoadFloat3(&_vertices[index + 1].Normal) + faceNormal);
+			XMStoreFloat3(&_vertices[index + 2].Normal, XMLoadFloat3(&_vertices[index + 2].Normal) + faceNormal);
+			XMStoreFloat3(&_vertices[index + 3].Normal, XMLoadFloat3(&_vertices[index + 3].Normal) + faceNormal);
+
+			// Add face normal to surrounding squares
+			// Check if we are at the edge of the grid, without this we will get a vertex out of bounds error
+
+			if (x > 0)
+			{
+				// Square to the left
+				XMStoreFloat3(&_vertices[index - _numberOfZPoints + 1].Normal, XMLoadFloat3(&_vertices[index - _numberOfZPoints + 1].Normal) + faceNormal);
+				XMStoreFloat3(&_vertices[index - _numberOfZPoints + 3].Normal, XMLoadFloat3(&_vertices[index - _numberOfZPoints + 3].Normal) + faceNormal);
+				if (z > 0)
+				{
+					// Square to the bottom left
+					XMStoreFloat3(&_vertices[index - _numberOfZPoints - 3].Normal, XMLoadFloat3(&_vertices[index - _numberOfZPoints - 3].Normal) + faceNormal);
+				}
+				if (z < _numberOfZPoints - 2)
+				{
+					// Square to the top left
+					XMStoreFloat3(&_vertices[index - _numberOfZPoints + 7].Normal, XMLoadFloat3(&_vertices[index - _numberOfZPoints + 7].Normal) + faceNormal);
+				}
+			}
+
+			if (x < _numberOfXPoints - 2)
+			{
+				// Square to the right
+				XMStoreFloat3(&_vertices[index + _numberOfZPoints].Normal, XMLoadFloat3(&_vertices[index + _numberOfZPoints].Normal) + faceNormal);
+				XMStoreFloat3(&_vertices[index + _numberOfZPoints + 2].Normal, XMLoadFloat3(&_vertices[index + _numberOfZPoints + 2].Normal) + faceNormal);
+				if (z > 0)
+				{
+					// Square to the bottom right
+					XMStoreFloat3(&_vertices[index + _numberOfZPoints - 4].Normal, XMLoadFloat3(&_vertices[index + _numberOfZPoints - 4].Normal) + faceNormal);
+				}
+				if (z < _numberOfZPoints - 2)
+				{
+					// Square to the top right
+					XMStoreFloat3(&_vertices[index + _numberOfZPoints + 6].Normal, XMLoadFloat3(&_vertices[index + _numberOfZPoints + 6].Normal) + faceNormal);
+				}
+			}
+
+			if (z > 0)
+			{
+				// Square below
+				XMStoreFloat3(&_vertices[index - 3].Normal, XMLoadFloat3(&_vertices[index - 3].Normal) + faceNormal);
+				XMStoreFloat3(&_vertices[index - 4].Normal, XMLoadFloat3(&_vertices[index - 4].Normal) + faceNormal);
+			}
+
+			if (z < _numberOfZPoints - 2)
+			{
+				// Square above
+				XMStoreFloat3(&_vertices[index + 6].Normal, XMLoadFloat3(&_vertices[index + 6].Normal) + faceNormal);
+				XMStoreFloat3(&_vertices[index + 7].Normal, XMLoadFloat3(&_vertices[index + 7].Normal) + faceNormal);
+			}
+
+			index += 4;
+		}
 	}
 
-	for (int x = 0; x < 1023; x++)
+	// Normalise all vertex normals
+	for (TerrainVertex& vertex : _vertices)
 	{
-		for (int z = 0; z < 1023; z++)
-		{
-			int index0 = _indices[(x * 1024) + z + 1];
-			int index1 = _indices[((x + 1) * 1024) + z + 1];
-			int index2 = _indices[(x * 1024) + z];
-			XMVECTOR u = XMVectorSet(_vertices[index1].Position.x - _vertices[index0].Position.x,
-				_vertices[index1].Position.y - _vertices[index0].Position.y,
-				_vertices[index1].Position.z - _vertices[index0].Position.z,
-				0.0f);
-			XMVECTOR v = XMVectorSet(_vertices[index2].Position.x - _vertices[index0].Position.x,
-				_vertices[index2].Position.y - _vertices[index0].Position.y,
-				_vertices[index2].Position.z - _vertices[index0].Position.z,
-				0.0f);
-			XMVECTOR normal = XMVector3Cross(u, v);
-			XMStoreFloat3(&_vertices[index0].Normal, XMVectorAdd(XMLoadFloat3(&_vertices[index0].Normal), normal));
-			vertexContributingCount[index0]++;
-			XMStoreFloat3(&_vertices[index1].Normal, XMVectorAdd(XMLoadFloat3(&_vertices[index1].Normal), normal));
-			vertexContributingCount[index1]++;
-			XMStoreFloat3(&_vertices[index2].Normal, XMVectorAdd(XMLoadFloat3(&_vertices[index2].Normal), normal));
-			vertexContributingCount[index2]++;
-		}
-	}
-	// Now divide the vertex normals by the contributing counts and normalise
-	for (int x = 0; x < 1023; x++)
-	{
-		for (int z = 0; z < 1023; z++)
-		{
-			XMVECTOR vertexNormal = XMLoadFloat3(&_vertices[(x * 1024) + z].Normal);
-			XMStoreFloat3(&_vertices[(x * 1024) + z].Normal, vertexNormal / (float)vertexContributingCount[(x * 1023) + z]);
-		}
+		XMStoreFloat3(&vertex.Normal, XMVector3Normalize(XMLoadFloat3(&vertex.Normal)));
 	}
 
 	// Setup the structure that specifies how big the vertex 
     // buffer should be
 	D3D11_BUFFER_DESC vertexBufferDescriptor;
 	vertexBufferDescriptor.Usage = D3D11_USAGE_IMMUTABLE;
-	vertexBufferDescriptor.ByteWidth = sizeof(VERTEX) * _vertices.size();
+	vertexBufferDescriptor.ByteWidth = sizeof(TerrainVertex) * _vertices.size();
 	vertexBufferDescriptor.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	vertexBufferDescriptor.CPUAccessFlags = 0;
 	vertexBufferDescriptor.MiscFlags = 0;
@@ -216,7 +273,7 @@ void TerrainNode::BuildShaders()
 	ComPtr<ID3DBlob> compilationMessages = nullptr;
 
 	//Compile vertex shader
-	HRESULT hr = D3DCompileFromFile(L"TexturedShaders.hlsl",
+	HRESULT hr = D3DCompileFromFile(L"TerrainShaders.hlsl",
 		nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE,
 		"VShader", "vs_5_0",
 		shaderCompileFlags, 0,
@@ -231,10 +288,9 @@ void TerrainNode::BuildShaders()
 	// Even if there are no compiler messages, check to make sure there were no other errors.
 	ThrowIfFailed(hr);
 	ThrowIfFailed(_device->CreateVertexShader(_vertexShaderByteCode->GetBufferPointer(), _vertexShaderByteCode->GetBufferSize(), NULL, _vertexShader.GetAddressOf()));
-	_deviceContext->VSSetShader(_vertexShader.Get(), 0, 0);
 
 	// Compile pixel shader
-	hr = D3DCompileFromFile(L"TexturedShaders.hlsl",
+	hr = D3DCompileFromFile(L"TerrainShaders.hlsl",
 		nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE,
 		"PShader", "ps_5_0",
 		shaderCompileFlags, 0,
@@ -248,7 +304,6 @@ void TerrainNode::BuildShaders()
 	}
 	ThrowIfFailed(hr);
 	ThrowIfFailed(_device->CreatePixelShader(_pixelShaderByteCode->GetBufferPointer(), _pixelShaderByteCode->GetBufferSize(), NULL, _pixelShader.GetAddressOf()));
-	_deviceContext->PSSetShader(_pixelShader.Get(), 0, 0);
 }
 
 void TerrainNode::BuildVertexLayout()
@@ -258,12 +313,12 @@ void TerrainNode::BuildVertexLayout()
 	D3D11_INPUT_ELEMENT_DESC vertexDesc[] =
 	{
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT , D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT , D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 1, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT , D3D11_INPUT_PER_VERTEX_DATA, 0 }
 	};
 
 	ThrowIfFailed(_device->CreateInputLayout(vertexDesc, ARRAYSIZE(vertexDesc), _vertexShaderByteCode->GetBufferPointer(), _vertexShaderByteCode->GetBufferSize(), _layout.GetAddressOf()));
-	_deviceContext->IASetInputLayout(_layout.Get());
 }
 
 void TerrainNode::BuildConstantBuffer()
@@ -365,23 +420,40 @@ void TerrainNode::LoadTerrainTextures()
 	ThrowIfFailed(_device->CreateShaderResourceView(textureArray.Get(), &viewDescription, _texturesResourceView.GetAddressOf()));
 }
 
+float TerrainNode::Absolute(float value)
+{
+	return sqrt(pow(value, 2));
+}
+
+float TerrainNode::RandomInRange(float min, float max)
+{
+	return min + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (max - min)));
+}
+
 void TerrainNode::GenerateBlendMap()
 {
-	// Note that _numberOfRows and _numberOfColumns need to be setup
-	// to the number of rows and columns in your grid in order for this
-	// to work.
-	DWORD* blendMap = new DWORD[_numberOfZPoints * _numberOfXPoints];
+	DWORD* blendMap = new DWORD[_numberOfXPoints * _numberOfZPoints];
 	DWORD* blendMapPtr = blendMap;
-	BYTE r = 100;
-	BYTE g = 100;
-	BYTE b = 100;
-	BYTE a = 100;
+	BYTE r;
+	BYTE g;
+	BYTE b;
+	BYTE a;
 
 	DWORD index = 0;
+	
+	float lightDirtHeight = 0.035;
+	float grassHeight = 0.045;
+	float stoneHeight = 0.4;
+	float snowHeight;
+
 	for (DWORD i = 0; i < _numberOfXPoints; i++)
 	{
 		for (DWORD j = 0; j < _numberOfZPoints; j++)
 		{
+			r = 0;
+			g = 0;
+			b = 0;
+			a = 0;
 
 			// Calculate the appropriate blend colour for the 
 			// current location in the blend map.  This has been
@@ -390,13 +462,51 @@ void TerrainNode::GenerateBlendMap()
 			// between 0 and 255). The code below combines these
 			// into a DWORD (32-bit value) and stores it in the blend map.
 
+			float height = _heightValues[(j * _numberOfXPoints) + i];
+			float averageSlope = 0.0f;
+			snowHeight = RandomInRange(0.5, 0.6);
+
+			if (i != _numberOfXPoints - 1 && j != _numberOfZPoints - 1)
+			{
+				float height2 = _heightValues[((j + 1) * _numberOfXPoints) + i + 1];
+				float height3 = _heightValues[(j * _numberOfXPoints) + i + 1];
+				float height4 = _heightValues[((j + 1) * _numberOfXPoints) + i];
+				averageSlope = (Absolute(height - height2) + Absolute(height - height3) + Absolute(height - height4)) / 3;
+			}
+
+			if (height < lightDirtHeight)
+			{
+				r = 255;
+			}
+			else
+			{
+				if (height < grassHeight)
+				{
+					b = 255;
+				}
+				else
+				{
+					if (averageSlope >= 0.006)
+					{
+						g = 255;
+						a = 100;
+					}
+					if (height >= snowHeight)
+					{
+						// Snow texture is black?
+					    g = 255;
+						a = 0;
+					}
+				}
+			}
+			
 			DWORD mapValue = (a << 24) + (b << 16) + (g << 8) + r;
 			*blendMapPtr++ = mapValue;
 		}
 	}
 	D3D11_TEXTURE2D_DESC blendMapDescription;
-	blendMapDescription.Width = _numberOfZPoints;
-	blendMapDescription.Height = _numberOfXPoints;
+	blendMapDescription.Width = _numberOfXPoints;
+	blendMapDescription.Height = _numberOfZPoints;
 	blendMapDescription.MipLevels = 1;
 	blendMapDescription.ArraySize = 1;
 	blendMapDescription.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -423,4 +533,38 @@ void TerrainNode::GenerateBlendMap()
 
 	ThrowIfFailed(_device->CreateShaderResourceView(blendMapTexture.Get(), &viewDescription, _blendMapResourceView.GetAddressOf()));
 	delete[] blendMap;
+}
+
+float TerrainNode::GetHeightAtPoint(float x, float z)
+{
+	int cellX = (int)((x - _terrainStart) / _spacing);
+	int cellZ = (int)((z - _terrainStart) / _spacing);
+
+	float cellStartX = _terrainStart + (cellX * _spacing);
+	float cellStartZ = _terrainStart + (cellZ * _spacing);
+
+	XMFLOAT3 v0 = XMFLOAT3(cellStartX, _heightValues[(cellX * _numberOfXPoints) + cellZ + 1] * _numberOfXPoints, cellStartZ + 10);
+	XMFLOAT3 v2 = XMFLOAT3(cellStartX + 10, _heightValues[((cellX + 1) * _numberOfXPoints) + cellZ] * _numberOfXPoints, cellStartZ);
+	XMFLOAT3 other;
+
+	float dx = Absolute(x - cellStartX);
+	float dz = Absolute(z - cellStartZ);
+
+	if (dx > dz)
+	{
+		other = XMFLOAT3(cellStartX + 10, _heightValues[((cellX + 1) * _numberOfXPoints) + cellZ + 1] * _numberOfXPoints, cellStartZ + 10);
+	}
+	else
+	{
+		other = XMFLOAT3(cellStartX, _heightValues[(cellX * _numberOfXPoints) + cellZ] * _numberOfXPoints, cellStartZ);
+	}
+
+	XMVECTOR faceNormal = XMVector3Cross(XMLoadFloat3(&other) - XMLoadFloat3(&v0), XMLoadFloat3(&v2) - XMLoadFloat3(&v0));
+	faceNormal = XMVector3Normalize(faceNormal);
+	XMFLOAT3 N;
+	XMStoreFloat3(&N, faceNormal);
+
+	float y = v0.y + ((N.x * dx + N.z * dz) / -N.y);
+
+	return y;
 }

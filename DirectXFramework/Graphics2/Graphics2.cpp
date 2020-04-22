@@ -1,15 +1,17 @@
 #include "Graphics2.h"
-#include "MeshNode.h"
 
 Graphics2 app;
 
 void Graphics2::CreateSceneGraph()
 {
 	_inputMode = Keyboard;
+	_turned = None;
+
 	SceneGraphPointer sceneGraph = GetSceneGraph();
-	GetCamera()->SetCameraPosition(0.0f, 50.0f, -500.0f);
+	GetCamera()->SetCameraPosition(0.0f, 0.0f, 0.0f);
 
 	/*
+	// Cube man
 	SceneNodePointer head = make_shared<Cube>(L"Head", _brickTexture);
 	head->SetWorldTransform(XMMatrixScaling(3, 3, 3) * XMMatrixTranslation(0, 34, 0));
 	sceneGraph->Add(head);
@@ -35,34 +37,35 @@ void Graphics2::CreateSceneGraph()
 	sceneGraph->Add(rightLeg);
 	*/
 
-	shared_ptr<MeshNode> plane = make_shared<MeshNode>(L"Plane", L"Textures\\Plane\\Bonanza.3DS");
+	// Planes
+	shared_ptr<MoveableNode> plane = make_shared<MoveableNode>(L"Plane", L"Textures\\Plane\\Bonanza.3DS");
 	sceneGraph->Add(plane);
+	_plane = plane;
+	_plane->SetPosition(0, 500, 0);
 
-	shared_ptr<TerrainNode> terrain = make_shared<TerrainNode>(L"Terrain", L"HeightMaps\\Example_heightMap.RAW");
+	shared_ptr<TerrainNode> terrain = make_shared<TerrainNode>(L"Terrain", L"HeightMaps\\Example_HeightMap.RAW");
 	sceneGraph->Add(terrain);
+	_terrain = terrain;
+
+	shared_ptr<SkyNode> sky = make_shared<SkyNode>(L"Sky", L"skymap.dds", 5000);
+	sceneGraph->Add(sky);
 }
 
 void Graphics2::UpdateSceneGraph()
 {
+	// Update the camera
+	_plane->Update();
+	if (!_freeCam)
+	{
+		GetCamera()->Update(_plane->GetPosition(), _plane->GetYaw(), _plane->GetPitch(), _plane->GetRoll(), 100, -25);
+	}
+	else
+	{
+		GetCamera()->Update();
+	}
 	SceneGraphPointer sceneGraph = GetSceneGraph();
-
-	// This is where you make any changes to the local world transformations to nodes
-	// in the scene graph
-
 	_rotation += 1.0f;
-
-	//sceneGraph->SetWorldTransform(XMMatrixRotationAxis(XMVectorSet(0.0f, 1.0f, 0.0f, 1.0f), _rotation * XM_PI / 180.0f));
-
-	SceneNodePointer plane = sceneGraph->Find(L"Plane");
-	plane->SetWorldTransform(XMMatrixRotationAxis(XMVectorSet(1.0f, 0.0f, 0.0f, 1.0f), 90 * XM_PI / 180.0f) * XMMatrixRotationAxis(XMVectorSet(0.0f, 0.0f, 1.0f, 1.0f), 45 * XM_PI / 180.0f) * XMMatrixTranslation(50, 0, 0) * XMMatrixRotationAxis(XMVectorSet(0.0f, 1.0f, 0.0f, 1.0f), _rotation * XM_PI / 180.0f));
-
-	/*
-	SceneNodePointer rightArm = sceneGraph->Find(L"Right Arm");
-	SceneNodePointer leftArm = sceneGraph->Find(L"Left Arm");
-
-	rightArm->SetWorldTransform((XMMatrixScaling(1, 8.5, 1) * XMMatrixTranslation(6, -8.5, 0) * XMMatrixRotationAxis(XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f), _rotation * 0.9f * XM_PI / 180.0f)) * XMMatrixTranslation(0, 30, 0));
-	leftArm->SetWorldTransform((XMMatrixScaling(1, 8.5, 1) * XMMatrixTranslation(-6, -8.5, 0) * XMMatrixRotationAxis(XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f), _rotation * -0.9f * XM_PI / 180.0f)) * XMMatrixTranslation(0, 30, 0));
-	*/
+	_turned = None;
 
 	// Handling input
 	if (_inputMode == Keyboard)
@@ -73,6 +76,57 @@ void Graphics2::UpdateSceneGraph()
 	{
 		HandleControllerInput();
 	}
+
+	// This is where you make any changes to the local world transformations to nodes
+	// in the scene graph
+
+
+
+	// Getting camera pos and forward vector
+	XMVECTOR cameraPos = GetCamera()->GetCameraPosition();
+	XMFLOAT3 cameraPosFloat;
+	XMStoreFloat3(&cameraPosFloat, cameraPos);
+
+	XMVECTOR cameraForward = GetCamera()->GetForwardVector();
+	XMFLOAT3 cameraForwardFloat;
+	XMStoreFloat3(&cameraForwardFloat, cameraForward);
+
+	/*
+	float y = _terrain->GetHeightAtPoint(cameraPosFloat.x, cameraPosFloat.z);
+	GetCamera()->SetCameraPosition(cameraPosFloat.x, y + 20, cameraPosFloat.z);
+	*/
+
+	/*
+	// Calculating smooth plane roll
+	if (_turned == Right && _roll < 45)
+	{
+		_roll++;
+	}
+	else if (_turned == Left && _roll > -45)
+	{
+		_roll--;
+	}
+	else if (_turned == None && _roll != 0)
+	{
+		if (_roll < 0)
+		{
+			_roll++;
+		}
+		else
+		{
+			_roll--;
+		}
+	}
+	*/
+
+	/*
+	// Cube man wavy arms
+	SceneNodePointer rightArm = sceneGraph->Find(L"Right Arm");
+	SceneNodePointer leftArm = sceneGraph->Find(L"Left Arm");
+
+	rightArm->SetWorldTransform((XMMatrixScaling(1, 8.5, 1) * XMMatrixTranslation(6, -8.5, 0) * XMMatrixRotationAxis(XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f), _rotation * 0.9f * XM_PI / 180.0f)) * XMMatrixTranslation(0, 30, 0));
+	leftArm->SetWorldTransform((XMMatrixScaling(1, 8.5, 1) * XMMatrixTranslation(-6, -8.5, 0) * XMMatrixRotationAxis(XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f), _rotation * -0.9f * XM_PI / 180.0f)) * XMMatrixTranslation(0, 30, 0));
+	*/
 }
 
 void Graphics2::HandleKeyboardInput()
@@ -82,22 +136,52 @@ void Graphics2::HandleKeyboardInput()
 	// W key
 	if (GetAsyncKeyState(0x57) < 0)
 	{
-		GetCamera()->SetForwardBack(_keyboardSpeedModifier);
+		if (!_freeCam)
+		{
+			_plane->SetForwardBack(_keyboardSpeedModifier);
+		}
+		else
+		{
+			GetCamera()->SetForwardBack(_keyboardSpeedModifier);
+		}
 	}
 	// S key
 	if (GetAsyncKeyState(0x53) < 0)
 	{
-		GetCamera()->SetForwardBack(-_keyboardSpeedModifier);
+		if (!_freeCam)
+		{
+			_plane->SetForwardBack(-_keyboardSpeedModifier);
+		}
+		else
+		{
+			GetCamera()->SetForwardBack(-_keyboardSpeedModifier);
+		}
 	}
 	// D key
 	if (GetAsyncKeyState(0x44) < 0)
 	{
-		GetCamera()->SetLeftRight(_keyboardSpeedModifier);
+		if (!_freeCam)
+		{
+			_plane->SetLeftRight(_keyboardSpeedModifier);
+			_turned = Right;
+		}
+		else
+		{
+			GetCamera()->SetLeftRight(_keyboardSpeedModifier);
+		}
 	}
 	// A key
 	if (GetAsyncKeyState(0x41) < 0)
 	{
-		GetCamera()->SetLeftRight(-_keyboardSpeedModifier);
+		if (!_freeCam)
+		{
+			_plane->SetLeftRight(-_keyboardSpeedModifier);
+			_turned = Left;
+		}
+		else
+		{
+			GetCamera()->SetLeftRight(-_keyboardSpeedModifier);
+		}
 	}
 	// Rotation
 	/*
@@ -119,26 +203,70 @@ void Graphics2::HandleKeyboardInput()
 		SetCursorPos(centerPos.x, centerPos.y);
 	}
 	*/
-	// Using arrow keys
+	// Using keys
 	// E key
 	if (GetAsyncKeyState(0x45) < 0)
 	{
-		GetCamera()->SetYaw(_keyboardSpeedModifier);
+		if (!_freeCam)
+		{
+			_plane->SetYaw(_keyboardSpeedModifier);
+			_turned = Right;
+		}
+		else
+		{
+			GetCamera()->SetYaw(_keyboardSpeedModifier);
+		}
 	}
 	// Q key
 	if (GetAsyncKeyState(0x51) < 0)
 	{
-		GetCamera()->SetYaw(-_keyboardSpeedModifier);
+		if (!_freeCam)
+		{
+			_plane->SetYaw(-_keyboardSpeedModifier);
+			_turned = Left;
+		}
+		else
+		{
+			GetCamera()->SetYaw(-_keyboardSpeedModifier);
+		}
 	}
 	// Shift key
 	if (GetAsyncKeyState(VK_SHIFT) < 0)
 	{
-		GetCamera()->SetPitch(-_keyboardSpeedModifier);
+		if (!_freeCam)
+		{
+			_plane->SetPitch(-_keyboardSpeedModifier);
+		}
+		else
+		{
+			GetCamera()->SetPitch(-_keyboardSpeedModifier);
+		}
 	}
 	// CTRL key
 	if (GetAsyncKeyState(VK_CONTROL) < 0)
 	{
-		GetCamera()->SetPitch(_keyboardSpeedModifier);
+		if (!_freeCam)
+		{
+			_plane->SetPitch(_keyboardSpeedModifier);
+		}
+		else
+		{
+			GetCamera()->SetPitch(_keyboardSpeedModifier);
+		}
+	}
+
+	// Free cam
+	if (GetAsyncKeyState(VK_SPACE) < 0)
+	{
+		_freeCamPressed = true;
+	}
+	else
+	{
+		if (_freeCamPressed)
+		{
+			_freeCam = !_freeCam;
+			_freeCamPressed = false;
+		}
 	}
 }
 

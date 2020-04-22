@@ -92,27 +92,24 @@ void Camera::Update(void)
 {
 	XMVECTOR cameraPosition;
 	XMVECTOR cameraTarget;
-	XMVECTOR cameraRight;
-	XMVECTOR cameraForward;
-	XMVECTOR cameraUp;
 
 	// Yaw (rotation around the Y axis) will have an impact on the forward and right vectors
 	XMMATRIX cameraRotationYaw = XMMatrixRotationAxis(defaultUp, _cameraYaw);
-	cameraRight = XMVector3TransformCoord(defaultRight, cameraRotationYaw);
-	cameraForward = XMVector3TransformCoord(defaultForward, cameraRotationYaw);
+	_cameraRight = XMVector3TransformCoord(defaultRight, cameraRotationYaw);
+	_cameraForward = XMVector3TransformCoord(defaultForward, cameraRotationYaw);
 
 	// Pitch (rotation around the X axis) impact the up and forward vectors
-	XMMATRIX cameraRotationPitch = XMMatrixRotationAxis(cameraRight, _cameraPitch);
-	cameraUp = XMVector3TransformCoord(defaultUp, cameraRotationPitch);
-	cameraForward = XMVector3TransformCoord(cameraForward, cameraRotationPitch);
+	XMMATRIX cameraRotationPitch = XMMatrixRotationAxis(_cameraRight, _cameraPitch);
+	_cameraUp = XMVector3TransformCoord(defaultUp, cameraRotationPitch);
+	_cameraForward = XMVector3TransformCoord(_cameraForward, cameraRotationPitch);
 
 	// Roll (rotation around the Z axis) will impact the Up and Right vectors
-	XMMATRIX cameraRotationRoll = XMMatrixRotationAxis(cameraForward, _cameraRoll);
-	cameraUp = XMVector3TransformCoord(cameraUp, cameraRotationRoll);
-	cameraRight = XMVector3TransformCoord(cameraRight, cameraRotationRoll);
+	XMMATRIX cameraRotationRoll = XMMatrixRotationAxis(_cameraForward, _cameraRoll);
+	_cameraUp = XMVector3TransformCoord(_cameraUp, cameraRotationRoll);
+	_cameraRight = XMVector3TransformCoord(_cameraRight, cameraRotationRoll);
 
 	// Adjust the camera position by the appropriate amount forward/back and left/right
-	cameraPosition = XMLoadFloat4(&_cameraPosition) + _moveLeftRight * cameraRight + _moveForwardBack * cameraForward;
+	cameraPosition = XMLoadFloat4(&_cameraPosition) + _moveLeftRight * _cameraRight + _moveForwardBack * _cameraForward;
 	XMStoreFloat4(&_cameraPosition, cameraPosition);
 
 	// Reset the amount we are moving
@@ -120,8 +117,36 @@ void Camera::Update(void)
 	_moveForwardBack = 0.0f;
 
 	// Calculate a vector that tells us the direction the camera is looking in
-	cameraTarget = cameraPosition + XMVector3Normalize(cameraForward);
+	cameraTarget = cameraPosition + XMVector3Normalize(_cameraForward);
 
 	// and calculate our view matrix
-	XMStoreFloat4x4(&_viewMatrix, XMMatrixLookAtLH(cameraPosition, cameraTarget, cameraUp));
+	XMStoreFloat4x4(&_viewMatrix, XMMatrixLookAtLH(cameraPosition, cameraTarget, _cameraUp));
+}
+
+void Camera::Update(XMVECTOR position, float yaw, float pitch, float roll, float forward, float up)
+{
+	// Yaw (rotation around the Y axis) will have an impact on the forward and right vectors
+	XMMATRIX cameraRotationYaw = XMMatrixRotationAxis(defaultUp, XMConvertToRadians(yaw));
+	_cameraRight = XMVector3TransformCoord(defaultRight, cameraRotationYaw);
+	_cameraForward = XMVector3TransformCoord(defaultForward, cameraRotationYaw);
+
+	// Pitch (rotation around the X axis) impact the up and forward vectors
+	XMMATRIX cameraRotationPitch = XMMatrixRotationAxis(_cameraRight, XMConvertToRadians(pitch));
+	_cameraUp = XMVector3TransformCoord(defaultUp, cameraRotationPitch);
+	_cameraForward = XMVector3TransformCoord(_cameraForward, cameraRotationPitch);
+
+	// Roll (rotation around the Z axis) will impact the Up and Right vectors
+	XMMATRIX cameraRotationRoll = XMMatrixRotationAxis(_cameraForward, XMConvertToRadians(roll));
+	_cameraUp = XMVector3TransformCoord(_cameraUp, cameraRotationRoll);
+	_cameraRight = XMVector3TransformCoord(_cameraRight, cameraRotationRoll);
+
+	// Adjust the camera position by the appropriate amount
+	XMVECTOR cameraPosition = position - (_cameraForward * forward) - (_cameraUp * up);
+	XMStoreFloat4(&_cameraPosition, cameraPosition);
+
+	// Calculate a vector that tells us the direction the camera is looking in
+	XMVECTOR cameraTarget = cameraPosition + XMVector3Normalize(_cameraForward);
+
+	// and calculate our view matrix
+	XMStoreFloat4x4(&_viewMatrix, XMMatrixLookAtLH(cameraPosition, cameraTarget, _cameraUp));
 }

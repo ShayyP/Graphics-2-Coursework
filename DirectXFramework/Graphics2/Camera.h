@@ -9,8 +9,12 @@ public:
     ~Camera();
 
     void Update();
+    void Update(XMVECTOR position, float yaw, float pitch, float roll, float forward, float up);
     XMMATRIX GetViewMatrix();
     XMVECTOR GetCameraPosition();
+    inline XMVECTOR GetForwardVector(){ return _cameraForward; }
+    inline XMVECTOR GetRightVector() { return _cameraRight; }
+    inline XMVECTOR GetUpVector() { return _cameraUp; }
     void SetCameraPosition(float x, float y, float z);
     void SetPitch(float pitch);
 	void SetTotalPitch(float pitch);
@@ -36,5 +40,8 @@ private:
     float       _cameraPitch;
     float       _cameraRoll;
 
+    XMVECTOR _cameraRight;
+    XMVECTOR _cameraForward;
+    XMVECTOR _cameraUp;
 };
 

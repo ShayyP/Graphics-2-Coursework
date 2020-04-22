@@ -87,8 +87,6 @@ void DirectXFramework::Update()
 	// Now apply any updates that have been made to world transformations
 	// to all the nodes
 	_sceneGraph->Update(XMMatrixIdentity());
-	// Update the camera
-	_camera->Update();
 }
 
 void DirectXFramework::Render()

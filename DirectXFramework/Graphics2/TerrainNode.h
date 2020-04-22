@@ -2,6 +2,28 @@
 #include "DirectXFramework.h"
 #include "DDSTextureLoader.h"
 
+struct TerrainVertex
+{
+	TerrainVertex(XMFLOAT3 position, XMFLOAT3 normal, XMFLOAT2 texCoord, XMFLOAT2 blendMapTexCoord)
+	{
+		Position = position;
+		Normal = normal;
+		TexCoord = texCoord;
+		BlendMapTexCoord = blendMapTexCoord;
+	}
+	TerrainVertex()
+	{
+		Position = XMFLOAT3(0.0f, 0.0f, 0.0f);
+		Normal = XMFLOAT3(0.0f, 0.0f, 0.0f);
+		TexCoord = XMFLOAT2(0.0f, 0.0f);
+		BlendMapTexCoord = XMFLOAT2(0.0f, 0.0f);
+	}
+	XMFLOAT3 Position;
+	XMFLOAT3 Normal;
+	XMFLOAT2 TexCoord;
+	XMFLOAT2 BlendMapTexCoord;
+};
+
 class TerrainNode : public SceneNode
 {
 public:
@@ -18,6 +40,8 @@ public:
 
 	bool LoadHeightMap(wstring heightMapFilename);
 
+	float Random(float min, float max);
+
 	void BuildGeometryBuffers();
 	void BuildShaders();
 	void BuildVertexLayout();
@@ -25,11 +49,15 @@ public:
 	void BuildTexture();
 
 	void LoadTerrainTextures();
+	float Absolute(float value);
+	float RandomInRange(float min, float max);
 	void GenerateBlendMap();
+
+	float GetHeightAtPoint(float x, float z);
 
 private:
 	wstring _heightMapPath;
-	vector<VERTEX> _vertices;
+	vector<TerrainVertex> _vertices;
 	vector<UINT> _indices;
 	ComPtr<ID3D11ShaderResourceView> _texture;
 	ComPtr<ID3D11Device> _device = DirectXFramework::GetDXFramework()->GetDevice();
@@ -49,5 +77,7 @@ private:
 	vector<float> _heightValues;
 	unsigned int _numberOfXPoints = 1024;
 	unsigned int _numberOfZPoints = 1024;
+	int _terrainStart = -5120;
+	int _spacing = 10;
 };
 
