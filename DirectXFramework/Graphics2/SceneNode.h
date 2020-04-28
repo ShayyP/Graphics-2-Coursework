@@ -1,6 +1,7 @@
 #pragma once
 #include "core.h"
 #include "DirectXCore.h"
+#include "BoundingVolume.h"
 
 using namespace std;
 
@@ -19,7 +20,14 @@ public:
 
 	// Core methods
 	virtual bool Initialise() = 0;
-	virtual void Update(FXMMATRIX& currentWorldTransformation) { XMStoreFloat4x4(&_combinedWorldTransformation, XMLoadFloat4x4(&_worldTransformation) * currentWorldTransformation); }
+	virtual void Update(FXMMATRIX& currentWorldTransformation) 
+	{ 
+		XMStoreFloat4x4(&_combinedWorldTransformation, XMLoadFloat4x4(&_worldTransformation) * currentWorldTransformation); 
+		if (_boundingVolume != nullptr)
+		{
+			_boundingVolume->Update(XMLoadFloat4x4(&_combinedWorldTransformation));
+		}
+	}
 	virtual void Render() = 0;
 	virtual void Shutdown() = 0;
 
@@ -33,9 +41,20 @@ public:
 	virtual void Remove(SceneNodePointer node) {};
 	virtual	SceneNodePointer Find(wstring name) { return (_name == name) ? shared_from_this() : nullptr; }
 
+	shared_ptr<BoundingVolume> GetBoundingVolume()  { return _boundingVolume; }
+	virtual bool IsColliding(shared_ptr<SceneNode> otherNode)
+	{
+		if (_boundingVolume != nullptr && otherNode->GetBoundingVolume() != nullptr)
+		{
+			return _boundingVolume->IsIntersecting(otherNode->GetBoundingVolume());
+		}
+		return false;
+	}
+
 protected:
-	XMFLOAT4X4			_worldTransformation;
-	XMFLOAT4X4			_combinedWorldTransformation;
-	wstring				_name;
+	XMFLOAT4X4	               _worldTransformation;
+	XMFLOAT4X4			       _combinedWorldTransformation;
+	wstring				       _name;
+	shared_ptr<BoundingVolume> _boundingVolume = nullptr;
 };
 

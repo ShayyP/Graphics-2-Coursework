@@ -5,7 +5,6 @@ Graphics2 app;
 void Graphics2::CreateSceneGraph()
 {
 	_inputMode = Keyboard;
-	_turned = None;
 
 	SceneGraphPointer sceneGraph = GetSceneGraph();
 	GetCamera()->SetCameraPosition(0.0f, 0.0f, 0.0f);
@@ -40,8 +39,12 @@ void Graphics2::CreateSceneGraph()
 	// Planes
 	shared_ptr<MoveableNode> plane = make_shared<MoveableNode>(L"Plane", L"Textures\\Plane\\Bonanza.3DS");
 	sceneGraph->Add(plane);
-	_plane = plane;
-	_plane->SetPosition(0, 500, 0);
+	_controlledNode = plane;
+	_controlledNode->SetPosition(0, 500, 0);
+
+	shared_ptr<MoveableNode> plane2 = make_shared<MoveableNode>(L"Plane2", L"Textures\\Plane\\Bonanza.3DS");
+	sceneGraph->Add(plane2);
+	_collidableNodes.push_back(plane2);
 
 	shared_ptr<TerrainNode> terrain = make_shared<TerrainNode>(L"Terrain", L"HeightMaps\\Example_HeightMap.RAW");
 	sceneGraph->Add(terrain);
@@ -53,80 +56,80 @@ void Graphics2::CreateSceneGraph()
 
 void Graphics2::UpdateSceneGraph()
 {
-	// Update the camera
-	_plane->Update();
-	if (!_freeCam)
+	if (!_crashed)
 	{
-		GetCamera()->Update(_plane->GetPosition(), _plane->GetYaw(), _plane->GetPitch(), _plane->GetRoll(), 100, -25);
-	}
-	else
-	{
-		GetCamera()->Update();
-	}
-	SceneGraphPointer sceneGraph = GetSceneGraph();
-	_rotation += 1.0f;
-	_turned = None;
-
-	// Handling input
-	if (_inputMode == Keyboard)
-	{
-		HandleKeyboardInput();
-	}
-	else
-	{
-		HandleControllerInput();
-	}
-
-	// This is where you make any changes to the local world transformations to nodes
-	// in the scene graph
-
-
-
-	// Getting camera pos and forward vector
-	XMVECTOR cameraPos = GetCamera()->GetCameraPosition();
-	XMFLOAT3 cameraPosFloat;
-	XMStoreFloat3(&cameraPosFloat, cameraPos);
-
-	XMVECTOR cameraForward = GetCamera()->GetForwardVector();
-	XMFLOAT3 cameraForwardFloat;
-	XMStoreFloat3(&cameraForwardFloat, cameraForward);
-
-	/*
-	float y = _terrain->GetHeightAtPoint(cameraPosFloat.x, cameraPosFloat.z);
-	GetCamera()->SetCameraPosition(cameraPosFloat.x, y + 20, cameraPosFloat.z);
-	*/
-
-	/*
-	// Calculating smooth plane roll
-	if (_turned == Right && _roll < 45)
-	{
-		_roll++;
-	}
-	else if (_turned == Left && _roll > -45)
-	{
-		_roll--;
-	}
-	else if (_turned == None && _roll != 0)
-	{
-		if (_roll < 0)
+		// Update the camera
+		_controlledNode->Update();
+		if (!_freeCam)
 		{
-			_roll++;
+			GetCamera()->Update(_controlledNode->GetPosition(), _controlledNode->GetYaw(), _controlledNode->GetPitch(), _controlledNode->GetRoll(), 100, -25);
 		}
 		else
 		{
-			_roll--;
+			GetCamera()->Update();
+		}
+		SceneGraphPointer sceneGraph = GetSceneGraph();
+
+		_rotation += 1.0f;
+
+		// Handling input
+		if (_inputMode == Keyboard)
+		{
+			HandleKeyboardInput();
+		}
+		else
+		{
+			HandleControllerInput();
+		}
+
+		// This is where you make any changes to the local world transformations to nodes
+		// in the scene graph
+
+		SceneNodePointer plane = sceneGraph->Find(L"Plane2");
+		plane->SetWorldTransform(XMMatrixRotationAxis(XMVectorSet(1.0f, 0.0f, 0.0f, 1.0f), 90 * XM_PI / 180.0f) * XMMatrixRotationAxis(XMVectorSet(0.0f, 0.0f, 1.0f, 1.0f), 45 * XM_PI / 180.0f) * XMMatrixTranslation(100, 0, 0) * XMMatrixRotationAxis(XMVectorSet(0.0f, 1.0f, 0.0f, 1.0f), _rotation * XM_PI / 180.0f) * XMMatrixTranslation(-500, 500, 0));
+
+		/*
+		// Cube man wavy arms
+		SceneNodePointer rightArm = sceneGraph->Find(L"Right Arm");
+		SceneNodePointer leftArm = sceneGraph->Find(L"Left Arm");
+
+		rightArm->SetWorldTransform((XMMatrixScaling(1, 8.5, 1) * XMMatrixTranslation(6, -8.5, 0) * XMMatrixRotationAxis(XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f), _rotation * 0.9f * XM_PI / 180.0f)) * XMMatrixTranslation(0, 30, 0));
+		leftArm->SetWorldTransform((XMMatrixScaling(1, 8.5, 1) * XMMatrixTranslation(-6, -8.5, 0) * XMMatrixRotationAxis(XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f), _rotation * -0.9f * XM_PI / 180.0f)) * XMMatrixTranslation(0, 30, 0));
+		*/
+	}
+	else
+	{
+		if (!_freeCam)
+		{
+			_freeCam = true;
+		}
+		// Handling input
+		if (_inputMode == Keyboard)
+		{
+			HandleKeyboardInput();
+		}
+		else
+		{
+			HandleControllerInput();
+		}
+		GetCamera()->Update();
+	}
+}
+
+void Graphics2::CheckForCollisions()
+{
+	if (_terrain->NodeHitFloor(_controlledNode))
+	{
+		_crashed = true;
+	}
+
+	for (SceneNodePointer node : _collidableNodes)
+	{
+		if (_controlledNode->IsColliding(node))
+		{
+			_crashed = true;
 		}
 	}
-	*/
-
-	/*
-	// Cube man wavy arms
-	SceneNodePointer rightArm = sceneGraph->Find(L"Right Arm");
-	SceneNodePointer leftArm = sceneGraph->Find(L"Left Arm");
-
-	rightArm->SetWorldTransform((XMMatrixScaling(1, 8.5, 1) * XMMatrixTranslation(6, -8.5, 0) * XMMatrixRotationAxis(XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f), _rotation * 0.9f * XM_PI / 180.0f)) * XMMatrixTranslation(0, 30, 0));
-	leftArm->SetWorldTransform((XMMatrixScaling(1, 8.5, 1) * XMMatrixTranslation(-6, -8.5, 0) * XMMatrixRotationAxis(XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f), _rotation * -0.9f * XM_PI / 180.0f)) * XMMatrixTranslation(0, 30, 0));
-	*/
 }
 
 void Graphics2::HandleKeyboardInput()
@@ -138,7 +141,7 @@ void Graphics2::HandleKeyboardInput()
 	{
 		if (!_freeCam)
 		{
-			_plane->SetForwardBack(_keyboardSpeedModifier);
+			_controlledNode->SetForwardBack(_keyboardSpeedModifier);
 		}
 		else
 		{
@@ -150,7 +153,7 @@ void Graphics2::HandleKeyboardInput()
 	{
 		if (!_freeCam)
 		{
-			_plane->SetForwardBack(-_keyboardSpeedModifier);
+			_controlledNode->SetForwardBack(-_keyboardSpeedModifier);
 		}
 		else
 		{
@@ -162,8 +165,7 @@ void Graphics2::HandleKeyboardInput()
 	{
 		if (!_freeCam)
 		{
-			_plane->SetLeftRight(_keyboardSpeedModifier);
-			_turned = Right;
+			_controlledNode->SetYaw(_keyboardSpeedModifier);
 		}
 		else
 		{
@@ -175,8 +177,7 @@ void Graphics2::HandleKeyboardInput()
 	{
 		if (!_freeCam)
 		{
-			_plane->SetLeftRight(-_keyboardSpeedModifier);
-			_turned = Left;
+			_controlledNode->SetYaw(-_keyboardSpeedModifier);
 		}
 		else
 		{
@@ -209,8 +210,7 @@ void Graphics2::HandleKeyboardInput()
 	{
 		if (!_freeCam)
 		{
-			_plane->SetYaw(_keyboardSpeedModifier);
-			_turned = Right;
+			_controlledNode->SetYaw(_keyboardSpeedModifier);
 		}
 		else
 		{
@@ -222,8 +222,7 @@ void Graphics2::HandleKeyboardInput()
 	{
 		if (!_freeCam)
 		{
-			_plane->SetYaw(-_keyboardSpeedModifier);
-			_turned = Left;
+			_controlledNode->SetYaw(-_keyboardSpeedModifier);
 		}
 		else
 		{
@@ -235,7 +234,7 @@ void Graphics2::HandleKeyboardInput()
 	{
 		if (!_freeCam)
 		{
-			_plane->SetPitch(-_keyboardSpeedModifier);
+			_controlledNode->SetPitch(-_keyboardSpeedModifier);
 		}
 		else
 		{
@@ -247,7 +246,7 @@ void Graphics2::HandleKeyboardInput()
 	{
 		if (!_freeCam)
 		{
-			_plane->SetPitch(_keyboardSpeedModifier);
+			_controlledNode->SetPitch(_keyboardSpeedModifier);
 		}
 		else
 		{
@@ -255,7 +254,7 @@ void Graphics2::HandleKeyboardInput()
 		}
 	}
 
-	// Free cam
+	// Free cam (space)
 	if (GetAsyncKeyState(VK_SPACE) < 0)
 	{
 		_freeCamPressed = true;

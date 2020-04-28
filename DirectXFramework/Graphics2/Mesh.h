@@ -35,6 +35,7 @@ class SubMesh
 {
 public:
 	SubMesh(ComPtr<ID3D11Buffer> vertexBuffer,
+		vector<XMFLOAT3> positions,
 		ComPtr<ID3D11Buffer> indexBuffer,
 		size_t vertexCount,
 		size_t indexCount,
@@ -46,6 +47,7 @@ public:
 	inline shared_ptr<Material>			GetMaterial() { return _material; }
 	inline size_t						GetVertexCount() { return _vertexCount; }
 	inline size_t						GetIndexCount() { return _indexCount; }
+	inline vector<XMFLOAT3>				GetPositions() { return _positions; }
 
 private:
    	ComPtr<ID3D11Buffer>				_vertexBuffer;
@@ -53,6 +55,7 @@ private:
 	shared_ptr<Material>				_material;
 	size_t								_vertexCount;
 	size_t								_indexCount;
+	vector<XMFLOAT3>				    _positions;
 };
 
 // The core Mesh class.  A Mesh corresponds to a scene in ASSIMP. A mesh consists of one or more sub-meshes.
@@ -83,6 +86,7 @@ public:
 	void								AddSubMesh(shared_ptr<SubMesh> subMesh);
 	shared_ptr<Node>				    GetRootNode();
 	void								SetRootNode(shared_ptr<Node> node);
+	vector<shared_ptr<SubMesh>>	        GetSubMeshList();
 
 private:
 	vector<shared_ptr<SubMesh>> 		_subMeshList;

@@ -19,12 +19,14 @@ Material::~Material(void)
 // SubMesh methods
 
 SubMesh::SubMesh(ComPtr<ID3D11Buffer> vertexBuffer,
+				 vector<XMFLOAT3> positions,
 			 	 ComPtr<ID3D11Buffer> indexBuffer,
 				 size_t vertexCount,
 				 size_t indexCount,
 				 shared_ptr<Material> material)
 {
 	_vertexBuffer = vertexBuffer;
+	_positions = positions;
 	_indexBuffer = indexBuffer;
 	_vertexCount = vertexCount;
 	_indexCount = indexCount;
@@ -67,4 +69,9 @@ shared_ptr<Node> Mesh::GetRootNode()
 void Mesh::SetRootNode(shared_ptr<Node> node)
 {
 	_rootNode = node;
+}
+
+vector<shared_ptr<SubMesh>> Mesh::GetSubMeshList()
+{
+	return _subMeshList;
 }

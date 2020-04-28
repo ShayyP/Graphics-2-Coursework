@@ -9,9 +9,9 @@ class Graphics2 : public DirectXFramework
 {
 public:
 	enum InputMode{ Keyboard, Controller };
-	enum Turned { None, Left, Right };
 	void CreateSceneGraph();
 	void UpdateSceneGraph();
+	void CheckForCollisions();
 	void HandleKeyboardInput();
 	void HandleControllerInput();
 private:
@@ -24,11 +24,13 @@ private:
 	float _cameraSpeedLimiter = 10000.0f;
 	float _mouseSpeedLimiter = 10.0f;
 	InputMode _inputMode;
-	Turned _turned;
 	float _roll = 0;
-	shared_ptr<TerrainNode> _terrain;
-	shared_ptr<MoveableNode> _plane;
+	shared_ptr<MoveableNode> _controlledNode;
 	bool _freeCam = false;
 	bool _freeCamPressed = false;
+	float _rollSpeed = 5;
+	vector<SceneNodePointer> _collidableNodes;
+	shared_ptr<TerrainNode> _terrain;
+	bool _crashed = false;
 };
 

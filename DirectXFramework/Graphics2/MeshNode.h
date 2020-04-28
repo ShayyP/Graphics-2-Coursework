@@ -2,6 +2,7 @@
 #include "SceneNode.h"
 #include "DirectXFramework.h"
 #include "MeshRenderer.h"
+#include "BoundingSphere.h"
 
 class MeshNode : public SceneNode
 {

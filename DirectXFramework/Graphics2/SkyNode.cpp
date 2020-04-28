@@ -46,7 +46,7 @@ void SkyNode::Render()
 	_deviceContext->RSSetState(_noCullRasteriserState.Get());
 	_deviceContext->OMSetDepthStencilState(_stencilState.Get(), 1);
 
-	_deviceContext->DrawIndexed(_indices.size(), 0, 0);
+	_deviceContext->DrawIndexed(static_cast<UINT>(_indices.size()), 0, 0);
 
 	_deviceContext->OMSetDepthStencilState(nullptr, 1);
 	_deviceContext->RSSetState(_defaultRasteriserState.Get());
@@ -121,7 +121,7 @@ void SkyNode::CreateSphere(float radius, size_t tessellation)
 	// buffer should be
 	D3D11_BUFFER_DESC vertexBufferDescriptor;
 	vertexBufferDescriptor.Usage = D3D11_USAGE_IMMUTABLE;
-	vertexBufferDescriptor.ByteWidth = sizeof(SkyVertex) * _vertices.size();
+	vertexBufferDescriptor.ByteWidth = sizeof(SkyVertex) * static_cast<UINT>(_vertices.size());
 	vertexBufferDescriptor.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	vertexBufferDescriptor.CPUAccessFlags = 0;
 	vertexBufferDescriptor.MiscFlags = 0;
@@ -139,7 +139,7 @@ void SkyNode::CreateSphere(float radius, size_t tessellation)
 	// buffer should be
 	D3D11_BUFFER_DESC indexBufferDescriptor;
 	indexBufferDescriptor.Usage = D3D11_USAGE_IMMUTABLE;
-	indexBufferDescriptor.ByteWidth = sizeof(UINT) * _indices.size();
+	indexBufferDescriptor.ByteWidth = sizeof(UINT) * static_cast<UINT>(_indices.size());
 	indexBufferDescriptor.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	indexBufferDescriptor.CPUAccessFlags = 0;
 	indexBufferDescriptor.MiscFlags = 0;

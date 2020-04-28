@@ -19,9 +19,9 @@ C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.2
           [
               _Ty=SkyNode
           ]
-E:\Year 2\Graphics 2\Repo\Graphics-2-Coursework\DirectXFramework\Graphics2\Graphics2.cpp(50): message : see reference to function template instantiation 'std::shared_ptr<SkyNode> std::make_shared<SkyNode,const wchar_t(&)[4],const wchar_t(&)[11],int>(const wchar_t (&)[4],const wchar_t (&)[11],int &&)' being compiled
+E:\Year 2\Graphics 2\Repo\Graphics-2-Coursework\DirectXFramework\Graphics2\Graphics2.cpp(53): message : see reference to function template instantiation 'std::shared_ptr<SkyNode> std::make_shared<SkyNode,const wchar_t(&)[4],const wchar_t(&)[11],int>(const wchar_t (&)[4],const wchar_t (&)[11],int &&)' being compiled
   Graphics2.vcxproj -> E:\Year 2\Graphics 2\Repo\Graphics-2-Coursework\DirectXFramework\x64\Debug\Graphics2.exe
-  E:\Year 2\Graphics 2\Repo\Graphics-2-Coursework\DirectXFramework\Graphics2\assimp-vc140-mt.dll
-  E:\Year 2\Graphics 2\Repo\Graphics-2-Coursework\DirectXFramework\Graphics2\zlib.dll
-          2 file(s) copied.
+  E:\Year 2\Graphics 2\Repo\Graphics-2-Coursework\DirectXFramework\Graphics2\*.dll 
+  The system cannot find the file specified.
+          0 file(s) copied.
           1 file(s) copied.

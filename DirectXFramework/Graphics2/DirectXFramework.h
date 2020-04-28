@@ -38,6 +38,7 @@ public:
 
 	virtual void CreateSceneGraph();
 	virtual void UpdateSceneGraph();
+	virtual void CheckForCollisions() = 0;
 
 	bool Initialise();
 	void Update();

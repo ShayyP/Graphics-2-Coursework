@@ -9,6 +9,7 @@ bool MeshNode::Initialise()
 	{
 		return false;
 	}
+	_boundingVolume = make_shared<BoundingSphere>(_mesh);
 	return _renderer->Initialise();
 }
 
@@ -25,5 +26,8 @@ void MeshNode::Render()
 	_renderer->SetAmbientLight(XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f));
 	_renderer->SetDirectionalLight(XMVectorSet(0.0f, -1.0f, 1.0f, 0.0f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
 	_renderer->Render();
+#if defined(RENDER_BOUNDING_VOLUMES)
+	_boundingVolume->Render();
+#endif
 }
 

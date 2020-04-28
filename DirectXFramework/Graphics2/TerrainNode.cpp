@@ -568,3 +568,31 @@ float TerrainNode::GetHeightAtPoint(float x, float z)
 
 	return y;
 }
+
+bool TerrainNode::NodeHitFloor(shared_ptr<SceneNode> node)
+{
+	shared_ptr<BoundingSphere> bound = dynamic_pointer_cast<BoundingSphere>(node->GetBoundingVolume());
+
+	for (shared_ptr<BoundingSphere> subBound : bound->GetSubBounds())
+	{
+		float radius = subBound->GetRadius();
+		XMFLOAT3 centrePos = subBound->GetCentrePos();
+		XMFLOAT4X4 centreWorldPos;
+		XMStoreFloat4x4(&centreWorldPos, XMMatrixTranslation(centrePos.x, centrePos.y, centrePos.z) * XMLoadFloat4x4(&bound->GetCombinedWorldTransformation()));
+		centrePos = XMFLOAT3(centreWorldPos._41, centreWorldPos._42, centreWorldPos._43);
+
+		for (float x = centrePos.x - radius; x < centrePos.x + radius; x += 1)
+		{
+			for (float z = centrePos.z - radius; z < centrePos.z + radius; z += 1)
+			{
+				float heightOfTerrain = GetHeightAtPoint(x, z);
+				float centreToTerrain = BoundingSphere::Distance(centrePos, XMFLOAT3(x, heightOfTerrain, z));
+				if (centreToTerrain < radius)
+				{
+					return true;
+				}
+			}
+		}
+	}
+	return false;
+}

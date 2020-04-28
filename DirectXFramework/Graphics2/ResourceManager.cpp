@@ -358,11 +358,13 @@ shared_ptr<Mesh> ResourceManager::LoadModelFromFile(wstring modelName)
         // We only handle one set of UV coordinates at the moment.  Again, handling multiple sets of UV
         // coordinates is a future enhancement.
 	    aiVector3D * subMeshTexCoords = subMesh->mTextureCoords[0];
+		vector<XMFLOAT3> positions = vector<XMFLOAT3>();
 	    VERTEX * modelVertices = new VERTEX[numVertices];
 	    VERTEX * currentVertex = modelVertices;
 	    for (unsigned int i = 0; i < numVertices; i++)
 	    {
 			currentVertex->Position = XMFLOAT3(subMeshVertices->x, subMeshVertices->y, subMeshVertices->z);
+			positions.push_back(currentVertex->Position);
 			currentVertex->Normal = XMFLOAT3(subMeshNormals->x, subMeshNormals->y, subMeshNormals->z);
 		    subMeshVertices++;
 		    subMeshNormals++;
@@ -461,7 +463,7 @@ shared_ptr<Mesh> ResourceManager::LoadModelFromFile(wstring modelName)
         {
             material = GetMaterial(materials[subMesh->mMaterialIndex]);
         }
-	    shared_ptr<SubMesh> resourceSubMesh = make_shared<SubMesh>(vertexBuffer, indexBuffer, numVertices, numberOfIndices, material);
+	    shared_ptr<SubMesh> resourceSubMesh = make_shared<SubMesh>(vertexBuffer, positions, indexBuffer, numVertices, numberOfIndices, material);
 	    resourceMesh->AddSubMesh(resourceSubMesh);
 		delete[] modelVertices;
 		delete[] modelIndices;

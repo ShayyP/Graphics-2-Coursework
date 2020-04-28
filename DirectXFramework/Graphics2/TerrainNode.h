@@ -1,6 +1,7 @@
 #pragma once
 #include "DirectXFramework.h"
 #include "DDSTextureLoader.h"
+#include "BoundingSphere.h"
 
 struct TerrainVertex
 {
@@ -54,6 +55,7 @@ public:
 	void GenerateBlendMap();
 
 	float GetHeightAtPoint(float x, float z);
+	bool NodeHitFloor(shared_ptr<SceneNode> node);
 
 private:
 	wstring _heightMapPath;
@@ -75,8 +77,8 @@ private:
 	ComPtr<ID3D11ShaderResourceView> _texturesResourceView;
 	ComPtr<ID3D11ShaderResourceView> _blendMapResourceView;
 	vector<float> _heightValues;
-	unsigned int _numberOfXPoints = 1024;
-	unsigned int _numberOfZPoints = 1024;
+	int _numberOfXPoints = 1024;
+	int _numberOfZPoints = 1024;
 	int _terrainStart = -5120;
 	int _spacing = 10;
 };
