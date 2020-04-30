@@ -23,7 +23,8 @@ SubMesh::SubMesh(ComPtr<ID3D11Buffer> vertexBuffer,
 			 	 ComPtr<ID3D11Buffer> indexBuffer,
 				 size_t vertexCount,
 				 size_t indexCount,
-				 shared_ptr<Material> material)
+				 shared_ptr<Material> material,
+				 bool isPropelor)
 {
 	_vertexBuffer = vertexBuffer;
 	_positions = positions;
@@ -31,6 +32,7 @@ SubMesh::SubMesh(ComPtr<ID3D11Buffer> vertexBuffer,
 	_vertexCount = vertexCount;
 	_indexCount = indexCount;
 	_material = material;
+	_isPropeller = isPropelor;
 }
 
 SubMesh::~SubMesh(void)

@@ -43,6 +43,8 @@ private:
 	ComPtr<ID3D11RasterizerState>    _defaultRasteriserState;
 	ComPtr<ID3D11RasterizerState>    _noCullRasteriserState;
 
+	XMMATRIX _completeTransformation;
+
 
 	void BuildShaders();
 	void BuildVertexLayout();

@@ -39,7 +39,8 @@ public:
 		ComPtr<ID3D11Buffer> indexBuffer,
 		size_t vertexCount,
 		size_t indexCount,
-		shared_ptr<Material> material);
+		shared_ptr<Material> material,
+		bool isPropelor);
 	~SubMesh();
 
 	inline ComPtr<ID3D11Buffer>			GetVertexBuffer() { return _vertexBuffer; }
@@ -48,6 +49,7 @@ public:
 	inline size_t						GetVertexCount() { return _vertexCount; }
 	inline size_t						GetIndexCount() { return _indexCount; }
 	inline vector<XMFLOAT3>				GetPositions() { return _positions; }
+	inline bool							GetIsPropeller() { return _isPropeller; }
 
 private:
    	ComPtr<ID3D11Buffer>				_vertexBuffer;
@@ -56,6 +58,7 @@ private:
 	size_t								_vertexCount;
 	size_t								_indexCount;
 	vector<XMFLOAT3>				    _positions;
+	bool								_isPropeller;
 };
 
 // The core Mesh class.  A Mesh corresponds to a scene in ASSIMP. A mesh consists of one or more sub-meshes.
@@ -87,10 +90,13 @@ public:
 	shared_ptr<Node>				    GetRootNode();
 	void								SetRootNode(shared_ptr<Node> node);
 	vector<shared_ptr<SubMesh>>	        GetSubMeshList();
+	float                               GetPropellerAngle() { return _propellerAngle; }
+	void                                SetPropellerAngle(float propelorAngle) { _propellerAngle = propelorAngle; }
 
 private:
 	vector<shared_ptr<SubMesh>> 		_subMeshList;
 	shared_ptr<Node>					_rootNode;
+	float                               _propellerAngle = 0.0f;
 };
 
 

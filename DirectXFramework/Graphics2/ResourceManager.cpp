@@ -345,6 +345,11 @@ shared_ptr<Mesh> ResourceManager::LoadModelFromFile(wstring modelName)
     for (unsigned int sm = 0; sm < scene->mNumMeshes; sm++)
     {
 	    aiMesh * subMesh = scene->mMeshes[sm];
+		bool isPropeller = false;
+		if (subMesh->mNumFaces == 356)
+		{
+			//isPropeller = true;
+		}
 	    unsigned int numVertices = subMesh->mNumVertices;
 	    bool hasNormals = subMesh->HasNormals();
 	    bool hasTexCoords = subMesh->HasTextureCoords(0);
@@ -463,7 +468,8 @@ shared_ptr<Mesh> ResourceManager::LoadModelFromFile(wstring modelName)
         {
             material = GetMaterial(materials[subMesh->mMaterialIndex]);
         }
-	    shared_ptr<SubMesh> resourceSubMesh = make_shared<SubMesh>(vertexBuffer, positions, indexBuffer, numVertices, numberOfIndices, material);
+		
+	    shared_ptr<SubMesh> resourceSubMesh = make_shared<SubMesh>(vertexBuffer, positions, indexBuffer, numVertices, numberOfIndices, material, isPropeller);
 	    resourceMesh->AddSubMesh(resourceSubMesh);
 		delete[] modelVertices;
 		delete[] modelIndices;

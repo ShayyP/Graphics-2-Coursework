@@ -4,10 +4,19 @@ Graphics2 app;
 
 void Graphics2::CreateSceneGraph()
 {
-	_inputMode = Keyboard;
+	_inputMode = InputMode::Keyboard;
 
 	SceneGraphPointer sceneGraph = GetSceneGraph();
 	GetCamera()->SetCameraPosition(0.0f, 0.0f, 0.0f);
+
+	// Terrain
+	shared_ptr<TerrainNode> terrain = make_shared<TerrainNode>(L"Terrain", L"HeightMaps\\Example_HeightMap.RAW");
+	sceneGraph->Add(terrain);
+	_terrain = terrain;
+
+	// Sky
+	shared_ptr<SkyNode> sky = make_shared<SkyNode>(L"Sky", L"skymap.dds", 5000);
+	sceneGraph->Add(sky);
 
 	/*
 	// Cube man
@@ -36,22 +45,57 @@ void Graphics2::CreateSceneGraph()
 	sceneGraph->Add(rightLeg);
 	*/
 
-	// Planes
-	shared_ptr<MoveableNode> plane = make_shared<MoveableNode>(L"Plane", L"Textures\\Plane\\Bonanza.3DS");
+	// Plane
+	shared_ptr<MoveableNode> plane = make_shared<MoveableNode>(L"Plane", L"Models\\Plane\\Bonanza.3DS");
+	plane->SetDefaultTransformation(XMMatrixRotationAxis(XMVectorSet(1.0f, 0.0f, 0.0f, 1.0f), 90 * XM_PI / 180.0f) * XMMatrixRotationAxis(XMVectorSet(0.0f, 1.0f, 0.0f, 1.0f), 180 * XM_PI / 180.0f));
 	sceneGraph->Add(plane);
 	_controlledNode = plane;
 	_controlledNode->SetPosition(0, 500, 0);
 
-	shared_ptr<MoveableNode> plane2 = make_shared<MoveableNode>(L"Plane2", L"Textures\\Plane\\Bonanza.3DS");
-	sceneGraph->Add(plane2);
-	_collidableNodes.push_back(plane2);
+	// Jets
+	shared_ptr<MeshNode> jet = make_shared<MeshNode>(L"Jet", L"Models\\Jet\\Attacker.blend");
+	jet->SetDefaultTransformation(XMMatrixRotationAxis(XMVectorSet(1.0f, 0.0f, 0.0f, 1.0f), 90 * XM_PI / 180.0f));
+	sceneGraph->Add(jet);
+	_collidableNodes.push_back(jet);
+	_pickableNodes.push_back(jet);
 
-	shared_ptr<TerrainNode> terrain = make_shared<TerrainNode>(L"Terrain", L"HeightMaps\\Example_HeightMap.RAW");
-	sceneGraph->Add(terrain);
-	_terrain = terrain;
+	shared_ptr<MeshNode> jet2 = make_shared<MeshNode>(L"Jet2", L"Models\\Jet\\Attacker.blend");
+	jet2->SetDefaultTransformation(XMMatrixRotationAxis(XMVectorSet(1.0f, 0.0f, 0.0f, 1.0f), 90 * XM_PI / 180.0f));
+	sceneGraph->Add(jet2);
+	_collidableNodes.push_back(jet2);
+	_pickableNodes.push_back(jet2);
 
-	shared_ptr<SkyNode> sky = make_shared<SkyNode>(L"Sky", L"skymap.dds", 5000);
-	sceneGraph->Add(sky);
+	shared_ptr<MeshNode> jet3 = make_shared<MeshNode>(L"Jet3", L"Models\\Jet\\Attacker.blend");
+	jet3->SetDefaultTransformation(XMMatrixRotationAxis(XMVectorSet(1.0f, 0.0f, 0.0f, 1.0f), 90 * XM_PI / 180.0f));
+	sceneGraph->Add(jet3);
+	_collidableNodes.push_back(jet3);
+	_pickableNodes.push_back(jet3);
+
+	shared_ptr<MeshNode> jet4 = make_shared<MeshNode>(L"Jet4", L"Models\\Jet\\Attacker.blend");
+	jet4->SetDefaultTransformation(XMMatrixRotationAxis(XMVectorSet(1.0f, 0.0f, 0.0f, 1.0f), 90 * XM_PI / 180.0f));
+	sceneGraph->Add(jet4);
+	_collidableNodes.push_back(jet4);
+	_pickableNodes.push_back(jet4);
+
+	// Big boy boeings
+	shared_ptr<MeshNode> boeing = make_shared<MeshNode>(L"Boeing", L"Models\\Boeing\\787.3ds");
+	boeing->SetDefaultTransformation(XMMatrixRotationAxis(XMVectorSet(1.0f, 0.0f, 0.0f, 1.0f), 90 * XM_PI / 180.0f));
+	sceneGraph->Add(boeing);
+	_collidableNodes.push_back(boeing);
+	_pickableNodes.push_back(boeing);
+
+	shared_ptr<MeshNode> boeing2 = make_shared<MeshNode>(L"Boeing2", L"Models\\Boeing\\787.3ds");
+	boeing2->SetDefaultTransformation(XMMatrixRotationAxis(XMVectorSet(1.0f, 0.0f, 0.0f, 1.0f), 90 * XM_PI / 180.0f));
+	sceneGraph->Add(boeing2);
+	_collidableNodes.push_back(boeing2);
+	_pickableNodes.push_back(boeing2);
+
+	shared_ptr<MeshNode> boeing3 = make_shared<MeshNode>(L"Boeing3", L"Models\\Boeing\\787.3ds");
+	boeing3->SetDefaultTransformation(XMMatrixRotationAxis(XMVectorSet(1.0f, 0.0f, 0.0f, 1.0f), 90 * XM_PI / 180.0f));
+	sceneGraph->Add(boeing3);
+	_collidableNodes.push_back(boeing3);
+	_pickableNodes.push_back(boeing3);
+
 }
 
 void Graphics2::UpdateSceneGraph()
@@ -73,7 +117,7 @@ void Graphics2::UpdateSceneGraph()
 		_rotation += 1.0f;
 
 		// Handling input
-		if (_inputMode == Keyboard)
+		if (_inputMode == InputMode::Keyboard)
 		{
 			HandleKeyboardInput();
 		}
@@ -85,8 +129,41 @@ void Graphics2::UpdateSceneGraph()
 		// This is where you make any changes to the local world transformations to nodes
 		// in the scene graph
 
-		SceneNodePointer plane = sceneGraph->Find(L"Plane2");
-		plane->SetWorldTransform(XMMatrixRotationAxis(XMVectorSet(1.0f, 0.0f, 0.0f, 1.0f), 90 * XM_PI / 180.0f) * XMMatrixRotationAxis(XMVectorSet(0.0f, 0.0f, 1.0f, 1.0f), 45 * XM_PI / 180.0f) * XMMatrixTranslation(100, 0, 0) * XMMatrixRotationAxis(XMVectorSet(0.0f, 1.0f, 0.0f, 1.0f), _rotation * XM_PI / 180.0f) * XMMatrixTranslation(-500, 500, 0));
+		SceneNodePointer jet = sceneGraph->Find(L"Jet");
+		if (!jet->IsDead())
+		{
+			jet->SetWorldTransform(XMLoadFloat4x4(&jet->GetDefaultTransformation()) * XMMatrixRotationAxis(XMVectorSet(0.0f, 0.0f, 1.0f, 1.0f), 45 * XM_PI / 180.0f) * XMMatrixTranslation(200, 0, 0) * XMMatrixRotationAxis(XMVectorSet(0.0f, 1.0f, 0.0f, 1.0f), _rotation * XM_PI / 180.0f) * XMMatrixTranslation(-500, 500, 0));
+		}
+		SceneNodePointer jet2 = sceneGraph->Find(L"Jet2");
+		if (!jet2->IsDead())
+		{
+			jet2->SetWorldTransform(XMLoadFloat4x4(&jet2->GetDefaultTransformation()) * XMMatrixRotationAxis(XMVectorSet(0.0f, 0.0f, 1.0f, 1.0f), 45 * XM_PI / 180.0f) * XMMatrixTranslation(200, 0, 0) * XMMatrixRotationAxis(XMVectorSet(0.0f, 1.0f, 0.0f, 1.0f), (_rotation + 90) * XM_PI / 180.0f) * XMMatrixTranslation(-500, 500, 0));
+		}
+		SceneNodePointer jet3 = sceneGraph->Find(L"Jet3");
+		if (!jet3->IsDead())
+		{
+			jet3->SetWorldTransform(XMLoadFloat4x4(&jet3->GetDefaultTransformation()) * XMMatrixRotationAxis(XMVectorSet(0.0f, 0.0f, 1.0f, 1.0f), 45 * XM_PI / 180.0f) * XMMatrixTranslation(200, 0, 0) * XMMatrixRotationAxis(XMVectorSet(0.0f, 1.0f, 0.0f, 1.0f), (_rotation + 180) * XM_PI / 180.0f) * XMMatrixTranslation(-500, 500, 0));
+		}
+		SceneNodePointer jet4 = sceneGraph->Find(L"Jet4");
+		if (!jet4->IsDead())
+		{
+			jet4->SetWorldTransform(XMLoadFloat4x4(&jet4->GetDefaultTransformation()) * XMMatrixRotationAxis(XMVectorSet(0.0f, 0.0f, 1.0f, 1.0f), 45 * XM_PI / 180.0f) * XMMatrixTranslation(200, 0, 0) * XMMatrixRotationAxis(XMVectorSet(0.0f, 1.0f, 0.0f, 1.0f), (_rotation + 270) * XM_PI / 180.0f) * XMMatrixTranslation(-500, 500, 0));
+		}
+		SceneNodePointer boeing = sceneGraph->Find(L"Boeing");
+		if (!boeing->IsDead())
+		{
+			boeing->SetWorldTransform(XMLoadFloat4x4(&boeing->GetDefaultTransformation()) * XMMatrixTranslation(-1200, _terrain->GetHeightAtPoint(-1200, 0), 0));
+		}
+		SceneNodePointer boeing2 = sceneGraph->Find(L"Boeing2");
+		if (!boeing2->IsDead())
+		{
+			boeing2->SetWorldTransform(XMLoadFloat4x4(&boeing2->GetDefaultTransformation()) * XMMatrixTranslation(-1200, _terrain->GetHeightAtPoint(-1200, 100), 100));
+		}
+		SceneNodePointer boeing3 = sceneGraph->Find(L"Boeing3");
+		if (!boeing3->IsDead())
+		{
+			boeing3->SetWorldTransform(XMLoadFloat4x4(&boeing3->GetDefaultTransformation()) * XMMatrixTranslation(-1200, _terrain->GetHeightAtPoint(-1200, 200), 200));
+		}
 
 		/*
 		// Cube man wavy arms
@@ -104,7 +181,7 @@ void Graphics2::UpdateSceneGraph()
 			_freeCam = true;
 		}
 		// Handling input
-		if (_inputMode == Keyboard)
+		if (_inputMode == InputMode::Keyboard)
 		{
 			HandleKeyboardInput();
 		}
@@ -185,26 +262,6 @@ void Graphics2::HandleKeyboardInput()
 		}
 	}
 	// Rotation
-	/*
-	// Using mouse
-	POINT cursorPos;
-	GetCursorPos(&cursorPos);
-	POINT centerPos;
-	centerPos.x = DirectXFramework::GetWindowWidth() / 2;
-	centerPos.y = DirectXFramework::GetWindowHeight() / 2;
-	if (ScreenToClient(DirectXFramework::GetHWnd(), &cursorPos))
-	{
-		GetCamera()->SetTotalYaw(-(centerPos.x - cursorPos.x) / _mouseSpeedLimiter);
-		GetCamera()->SetTotalPitch(-(centerPos.y - cursorPos.y) / _mouseSpeedLimiter);
-	}
-	// Reset mouse pos
-	if (GetAsyncKeyState(VK_RBUTTON) < 0)
-	{
-		ClientToScreen(DirectXFramework::GetHWnd(), &centerPos);
-		SetCursorPos(centerPos.x, centerPos.y);
-	}
-	*/
-	// Using keys
 	// E key
 	if (GetAsyncKeyState(0x45) < 0)
 	{
@@ -267,16 +324,121 @@ void Graphics2::HandleKeyboardInput()
 			_freeCamPressed = false;
 		}
 	}
+
+	// Click
+	if (GetAsyncKeyState(VK_LBUTTON) < 0)
+	{
+		_mouseClicked = true;
+	}
+	else
+	{
+		if (_mouseClicked)
+		{
+			POINT p;
+			if (GetCursorPos(&p))
+			{
+				HandleClick(static_cast<float>(p.x), static_cast<float>(p.y));
+			}
+			_mouseClicked = false;
+		}
+	}
 }
 
 void Graphics2::HandleControllerInput()
 {
 	// Handling controller input
-	GetController()->ProcessGameController();
-	// Movement
-	GetCamera()->SetForwardBack(GetController()->GetThumbLY() / _cameraSpeedLimiter);
-	GetCamera()->SetLeftRight(GetController()->GetThumbLX() / _cameraSpeedLimiter);
-	// Rotation
-	GetCamera()->SetYaw(GetController()->GetThumbRX() / _cameraSpeedLimiter);
-	GetCamera()->SetPitch(-GetController()->GetThumbRY() / _cameraSpeedLimiter);
+	if (GetController()->ProcessGameController() == "A")
+	{
+		_freeCamPressed = true;
+	}
+	else
+	{
+		if (_freeCamPressed)
+		{
+			_freeCam = !_freeCam;
+			_freeCamPressed = false;
+		}
+	}
+	if (_freeCam)
+	{
+		// Movement
+		GetCamera()->SetForwardBack(GetController()->GetThumbLY() / _cameraSpeedLimiter);
+		GetCamera()->SetLeftRight(GetController()->GetThumbLX() / _cameraSpeedLimiter);
+		// Rotation
+		GetCamera()->SetYaw(GetController()->GetThumbRX() / _cameraSpeedLimiter);
+		GetCamera()->SetPitch(-GetController()->GetThumbRY() / _cameraSpeedLimiter);
+	}
+	else
+	{
+		// Movement
+		_controlledNode->SetForwardBack(GetController()->GetThumbLY() / _cameraSpeedLimiter);
+		_controlledNode->SetLeftRight(GetController()->GetThumbLX() / _cameraSpeedLimiter);
+		// Rotation
+		_controlledNode->SetYaw(GetController()->GetThumbRX() / _cameraSpeedLimiter);
+		_controlledNode->SetPitch(-GetController()->GetThumbRY() / _cameraSpeedLimiter);
+	}
+}
+
+void Graphics2::HandleClick(float mouseX, float mouseY)
+{
+	XMFLOAT4X4 projectionMatrix;
+	XMStoreFloat4x4(&projectionMatrix, GetProjectionTransformation());
+	// Compute picking ray in view space.
+	float vx = (+2.0f * mouseX / GetWindowWidth() - 1.0f) /
+		projectionMatrix(0, 0);
+	float vy = (-2.0f * mouseY / GetWindowHeight() + 1.0f) /
+		projectionMatrix(1, 1);
+
+	// Ray definition in view space.
+	XMVECTOR rayOrigin = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);
+	XMVECTOR rayDirection = XMVectorSet(vx, vy, 1.0f, 0.0f);
+
+	// Getting inverse view matrix to transform to world space
+	XMMATRIX viewTransformation = GetCamera()->GetViewMatrix();
+	XMMATRIX inverseViewTransformation = XMMatrixInverse(&XMMatrixDeterminant(viewTransformation), viewTransformation);
+
+	// Applying inverse view transform to ray
+	rayOrigin = XMVector4Transform(rayOrigin, inverseViewTransformation);
+	rayDirection = XMVector4Transform(rayDirection, inverseViewTransformation);
+
+	SceneNodePointer closestIntersectingNode = nullptr;
+	float distanceToClosestNode = 0.0f;
+
+	for (SceneNodePointer node : _pickableNodes)
+	{
+		float isIntersecting = node->IntersectingRay(rayOrigin, rayDirection);
+		if (isIntersecting != 0.0f)
+		{
+			if (closestIntersectingNode == nullptr)
+			{
+				closestIntersectingNode = node;
+				distanceToClosestNode = isIntersecting;
+			}
+			else
+			{
+				if (isIntersecting > distanceToClosestNode)
+				{
+					closestIntersectingNode = node;
+					distanceToClosestNode = isIntersecting;
+				}
+			}
+		}
+	}
+
+	if (closestIntersectingNode != nullptr)
+	{
+		closestIntersectingNode->Kill();
+
+		vector<SceneNodePointer>::iterator pos = find(_collidableNodes.begin(), _collidableNodes.end(), closestIntersectingNode);
+		if (pos != _collidableNodes.end())
+		{
+			_collidableNodes.erase(pos);
+		}
+
+		pos = find(_pickableNodes.begin(), _pickableNodes.end(), closestIntersectingNode);
+		if (pos != _pickableNodes.end())
+		{
+			_pickableNodes.erase(pos);
+		}
+	}
 }

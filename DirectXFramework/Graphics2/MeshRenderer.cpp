@@ -49,6 +49,14 @@ void MeshRenderer::RenderNode(shared_ptr<Node> node, bool renderTransparent)
 	{
 		unsigned int meshIndex = node->GetMesh(i);
 		shared_ptr<SubMesh> subMesh = _mesh->GetSubMesh(meshIndex);
+		if (subMesh->GetIsPropeller())
+		{
+			cBuffer.CompleteTransformation = XMMatrixRotationY(_mesh->GetPropellerAngle()) * cBuffer.CompleteTransformation;
+		}
+		else
+		{
+			cBuffer.CompleteTransformation = _completeTransformation;
+		}
 		shared_ptr<Material> material = subMesh->GetMaterial();
 		float opacity = material->GetOpacity();
 		if ((renderTransparent && opacity < 1.0f) ||
@@ -85,6 +93,7 @@ void MeshRenderer::RenderNode(shared_ptr<Node> node, bool renderTransparent)
 
 void MeshRenderer::Render()
 {
+	_mesh->SetPropellerAngle(_mesh->GetPropellerAngle() + 1);
 	// Turn off back face culling while we render a mesh. 
 	// We do this since ASSIMP does not appear to be setting the
 	// TWOSIDED property on materials correctly. Without turning off
@@ -95,11 +104,11 @@ void MeshRenderer::Render()
 	XMMATRIX viewTransformation = DirectXFramework::GetDXFramework()->GetCamera()->GetViewMatrix();
 
 
-	XMMATRIX completeTransformation = XMLoadFloat4x4(&_worldTransformation) * viewTransformation * projectionTransformation;
+	_completeTransformation = XMLoadFloat4x4(&_worldTransformation) * viewTransformation * projectionTransformation;
 
 	// Draw the first cube
 
-	cBuffer.CompleteTransformation = completeTransformation;
+	cBuffer.CompleteTransformation = _completeTransformation;
 	cBuffer.WorldTransformation = XMLoadFloat4x4(&_worldTransformation);
 	cBuffer.AmbientColor = _ambientLight;
 	cBuffer.LightVector = XMVector4Normalize(XMLoadFloat4(&_directionalLightVector)); 

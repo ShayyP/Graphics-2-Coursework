@@ -93,5 +93,5 @@ void MoveableNode::Update()
 	_moveForwardBack = 0.0f;
 
 	// Update the world transform matrix
-	XMStoreFloat4x4(&_worldTransformation, XMMatrixRotationAxis(XMVectorSet(1.0f, 0.0f, 0.0f, 1.0f), 90 * XM_PI / 180.0f) * XMMatrixRotationAxis(XMVectorSet(0.0f, 1.0f, 0.0f, 1.0f), 180 * XM_PI / 180.0f) * rotationYaw * rotationPitch * rotationRoll * XMMatrixTranslation(_position.x, _position.y, _position.z));
+	XMStoreFloat4x4(&_worldTransformation, XMLoadFloat4x4(&_defaultTransformation) * rotationYaw * rotationPitch * rotationRoll * XMMatrixTranslation(_position.x, _position.y, _position.z));
 }

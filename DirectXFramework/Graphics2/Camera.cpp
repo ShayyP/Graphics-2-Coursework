@@ -12,6 +12,11 @@ Camera::Camera()
     _cameraYaw = 0.0f;
     _cameraPitch = 0.0f;
     _cameraRoll = 0.0f;
+
+	_cameraRight = XMVECTOR();
+	_cameraForward = XMVECTOR();
+	_cameraUp = XMVECTOR();
+	_viewMatrix = XMFLOAT4X4();
 }
 
 Camera::~Camera()

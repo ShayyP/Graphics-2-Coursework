@@ -11,7 +11,7 @@ GamePadController::~GamePadController(void)
 {
 }
 
-void GamePadController::ProcessGameController()
+char* GamePadController::ProcessGameController()
 {
 	DWORD magnitudeSquared;
 
@@ -20,7 +20,7 @@ void GamePadController::ProcessGameController()
     if (XInputGetState(0, &_controllerState) != ERROR_SUCCESS)
 	{
 		// Controller is not connected or is lost
-		return;
+		return "";
 	}
 	// Uncomment out this if statement if you only want to test the controller if it has
 	// changed since the last time it was tested
@@ -74,21 +74,9 @@ void GamePadController::ProcessGameController()
 
 	// Test the different digital buttons
 	WORD buttons = _controllerState.Gamepad.wButtons;
-	if (buttons & XINPUT_GAMEPAD_DPAD_UP)
+	if (buttons & XINPUT_GAMEPAD_A)
 	{
-		// Directional pad up pressed
-	}
-	if (buttons & XINPUT_GAMEPAD_DPAD_DOWN)
-	{
-		// Directional pad down pressed
-	}
-	if (buttons & XINPUT_GAMEPAD_DPAD_LEFT)
-	{
-		// Directional pad left pressed
-	}
-	if (buttons & XINPUT_GAMEPAD_DPAD_RIGHT)
-	{
-		// Directional pad right pressed
+		return "A";
 	}
 
 	// Other button mask values that can be used are:
@@ -104,4 +92,5 @@ void GamePadController::ProcessGameController()
 	//  XINPUT_GAMEPAD_X, 
 	//  XINPUT_GAMEPAD_Y 
 
+	return "";
 }

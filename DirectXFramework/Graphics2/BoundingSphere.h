@@ -30,6 +30,7 @@ public:
 	virtual vector<shared_ptr<BoundingSphere>> GetSubBounds() { return _subBounds; }
 
 	virtual bool IsIntersecting(shared_ptr<BoundingVolume> otherVolume);
+	virtual float IsIntersectingRay(XMVECTOR origin, XMVECTOR direction);
 
 private:
 	shared_ptr<Mesh> _mesh = nullptr;

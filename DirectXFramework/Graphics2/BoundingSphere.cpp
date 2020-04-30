@@ -46,8 +46,8 @@ BoundingSphere::BoundingSphere(shared_ptr<SubMesh> subMesh)
 	}
 
 	float largestDistance = 0.0f;
-	XMFLOAT3 largestPairMin;
-	XMFLOAT3 largestPairMax;
+	XMFLOAT3 largestPairMin = XMFLOAT3(0.0f, 0.0f, 0.0f);
+	XMFLOAT3 largestPairMax = XMFLOAT3(0.0f, 0.0f, 0.0f);
 
 	float xDistance = Distance(minX, maxX);
 	float yDistance = Distance(minY, maxY);
@@ -355,6 +355,7 @@ bool BoundingSphere::IsIntersecting(shared_ptr<BoundingVolume> otherVolume)
 	float distanceBetweenVolumes = Distance(XMFLOAT3(_combinedWorldTransformation._41, _combinedWorldTransformation._42, _combinedWorldTransformation._43), XMFLOAT3(otherPos._41, otherPos._42, otherPos._43));
 	if (distanceBetweenVolumes < (_maxSize + otherMaxSize))
 	{
+		shared_ptr<BoundingSphere> otherBound = dynamic_pointer_cast<BoundingSphere>(otherVolume);
 
 		for (shared_ptr<BoundingSphere> subBound : _subBounds)
 		{
@@ -364,8 +365,6 @@ bool BoundingSphere::IsIntersecting(shared_ptr<BoundingVolume> otherVolume)
 			XMStoreFloat4x4(&centreWorldPos, XMMatrixTranslation(centrePos.x, centrePos.y, centrePos.z) * XMLoadFloat4x4(&_combinedWorldTransformation));
 			centrePos = XMFLOAT3(centreWorldPos._41, centreWorldPos._42, centreWorldPos._43);
 
-			shared_ptr<BoundingSphere> otherBound = dynamic_pointer_cast<BoundingSphere>(otherVolume);
-
 			for (shared_ptr<BoundingSphere> otherSubBound : otherBound->GetSubBounds())
 			{
 				float otherRadius = subBound->GetRadius();
@@ -374,7 +373,7 @@ bool BoundingSphere::IsIntersecting(shared_ptr<BoundingVolume> otherVolume)
 				XMStoreFloat4x4(&otherCentreWorldPos, XMMatrixTranslation(otherCentrePos.x, otherCentrePos.y, otherCentrePos.z) * XMLoadFloat4x4(&otherBound->GetCombinedWorldTransformation()));
 				otherCentrePos = XMFLOAT3(otherCentreWorldPos._41, otherCentreWorldPos._42, otherCentreWorldPos._43);
 			
-				if (Distance(centrePos, otherCentrePos) < (radius + otherRadius))
+				if (Distance(centrePos, otherCentrePos) <= (radius + otherRadius))
 				{
 					return true;
 				}
@@ -382,4 +381,32 @@ bool BoundingSphere::IsIntersecting(shared_ptr<BoundingVolume> otherVolume)
 		}
 	}
 	return false;
+}
+
+float BoundingSphere::IsIntersectingRay(XMVECTOR origin, XMVECTOR direction)
+{
+	for (shared_ptr<BoundingSphere> subBound : _subBounds)
+	{
+		float radius = subBound->GetRadius();
+		XMFLOAT3 centrePos = subBound->GetCentrePos();
+		XMFLOAT4X4 centreWorldPos;
+		XMStoreFloat4x4(&centreWorldPos, XMMatrixTranslation(centrePos.x, centrePos.y, centrePos.z) * XMLoadFloat4x4(&_combinedWorldTransformation));
+		centrePos = XMFLOAT3(centreWorldPos._41, centreWorldPos._42, centreWorldPos._43);
+		XMVECTOR centrePosVector = XMLoadFloat3(&XMFLOAT3(centreWorldPos._41, centreWorldPos._42, centreWorldPos._43));
+
+		direction = XMVector3Normalize(direction);
+		XMVECTOR v = centrePosVector - origin;
+		XMFLOAT3 dot;
+		XMStoreFloat3(&dot, XMVector3Dot(v, direction));
+		XMFLOAT3 closestPointOnLine;
+		XMStoreFloat3(&closestPointOnLine, origin + (direction * dot.x));
+
+		if (Distance(closestPointOnLine, centrePos) <= radius * 5)
+		{
+			XMFLOAT3 distanceOfNodeFromCamera;
+			XMStoreFloat3(&distanceOfNodeFromCamera, XMVector3Length(v));
+			return distanceOfNodeFromCamera.x;
+		}
+	}
+	return 0.0f;
 }

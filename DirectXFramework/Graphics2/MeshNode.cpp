@@ -20,14 +20,17 @@ void MeshNode::Shutdown()
 
 void MeshNode::Render()
 {
-	_renderer->SetMesh(_mesh);
-	_renderer->SetWorldTransformation(XMLoadFloat4x4(&_combinedWorldTransformation));
-	_renderer->SetCameraPosition(XMFLOAT4(0.0f, 0.0f, -100.0f, 1.0f));
-	_renderer->SetAmbientLight(XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f));
-	_renderer->SetDirectionalLight(XMVectorSet(0.0f, -1.0f, 1.0f, 0.0f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
-	_renderer->Render();
+	if (!_dead)
+	{
+		_renderer->SetMesh(_mesh);
+		_renderer->SetWorldTransformation(XMLoadFloat4x4(&_combinedWorldTransformation));
+		_renderer->SetCameraPosition(XMFLOAT4(0.0f, 0.0f, -100.0f, 1.0f));
+		_renderer->SetAmbientLight(XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f));
+		_renderer->SetDirectionalLight(XMVectorSet(0.0f, -1.0f, 1.0f, 0.0f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
+		_renderer->Render();
 #if defined(RENDER_BOUNDING_VOLUMES)
-	_boundingVolume->Render();
+		_boundingVolume->Render();
 #endif
+	}
 }
 

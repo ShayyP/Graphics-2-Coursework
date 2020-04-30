@@ -15,7 +15,7 @@ typedef shared_ptr<SceneNode>	SceneNodePointer;
 class SceneNode : public enable_shared_from_this<SceneNode>
 {
 public:
-	SceneNode(wstring name) {_name = name; XMStoreFloat4x4(&_worldTransformation, XMMatrixIdentity()); };
+	SceneNode(wstring name) { _name = name; XMStoreFloat4x4(&_worldTransformation, XMMatrixIdentity()), XMStoreFloat4x4(&_defaultTransformation, XMMatrixIdentity()); };
 	~SceneNode(void) {};
 
 	// Core methods
@@ -34,6 +34,8 @@ public:
 	void SetWorldTransform(FXMMATRIX& worldTransformation) { XMStoreFloat4x4(&_worldTransformation, worldTransformation); }
 
 	XMFLOAT4X4 GetWorldTransform() { return _worldTransformation; }
+	XMFLOAT4X4 GetDefaultTransformation() { return _defaultTransformation; }
+	void SetDefaultTransformation(XMMATRIX defaultTransformation) { XMStoreFloat4x4(&_defaultTransformation, defaultTransformation); }
 		
 	// Although only required in the composite class, these are provided
 	// in order to simplify the code base.
@@ -50,11 +52,23 @@ public:
 		}
 		return false;
 	}
+	virtual float IntersectingRay(XMVECTOR origin, XMVECTOR direction)
+	{
+		if (_boundingVolume != nullptr)
+		{
+			return _boundingVolume->IsIntersectingRay(origin, direction);
+		}
+		return 0.0f;
+	}
+	void Kill() { _dead = true; }
+	bool IsDead() { return _dead; }
 
 protected:
 	XMFLOAT4X4	               _worldTransformation;
 	XMFLOAT4X4			       _combinedWorldTransformation;
 	wstring				       _name;
 	shared_ptr<BoundingVolume> _boundingVolume = nullptr;
+	XMFLOAT4X4                 _defaultTransformation;
+	bool                       _dead = false;
 };
 

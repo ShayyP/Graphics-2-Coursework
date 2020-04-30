@@ -9,7 +9,7 @@ class GamePadController
 public:
 	GamePadController();
 	~GamePadController();
-	void ProcessGameController();
+	char* ProcessGameController();
 
 	inline SHORT GetThumbRX() { return _thumbRX; }
 	inline SHORT GetThumbRY() { return _thumbRY; }

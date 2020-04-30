@@ -4,16 +4,18 @@
 #include "TerrainNode.h"
 #include "MoveableNode.h"
 #include "SkyNode.h"
+#include <algorithm>
 
 class Graphics2 : public DirectXFramework
 {
 public:
-	enum InputMode{ Keyboard, Controller };
+	enum class InputMode{ Keyboard, Controller };
 	void CreateSceneGraph();
 	void UpdateSceneGraph();
 	void CheckForCollisions();
 	void HandleKeyboardInput();
 	void HandleControllerInput();
+	void HandleClick(float mouseX, float mouseY);
 private:
 	float _rotation = 0;
 	wchar_t* _brickTexture = L"Textures/Bricks.png";
@@ -28,8 +30,10 @@ private:
 	shared_ptr<MoveableNode> _controlledNode;
 	bool _freeCam = false;
 	bool _freeCamPressed = false;
+	bool _mouseClicked = false;
 	float _rollSpeed = 5;
 	vector<SceneNodePointer> _collidableNodes;
+	vector<SceneNodePointer> _pickableNodes;
 	shared_ptr<TerrainNode> _terrain;
 	bool _crashed = false;
 };
