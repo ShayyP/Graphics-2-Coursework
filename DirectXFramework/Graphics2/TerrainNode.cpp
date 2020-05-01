@@ -43,7 +43,7 @@ void TerrainNode::Render()
 	_deviceContext->IASetIndexBuffer(_indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 	cBuffer.DiffuseCoefficient = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
 	cBuffer.SpecularCoefficient = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
-	cBuffer.Shininess = 5.0f;
+	cBuffer.Shininess = 1.0f;
 	cBuffer.Opacity = 1.0f;
 	_deviceContext->UpdateSubresource(_constantBuffer.Get(), 0, 0, &cBuffer, 0, 0);
 	_deviceContext->VSSetConstantBuffers(0, 1, _constantBuffer.GetAddressOf());

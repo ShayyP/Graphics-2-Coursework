@@ -90,6 +90,12 @@
     <ClInclude Include="BoundingSphere.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Structs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="WireframeRenderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Graphics2.rc">
@@ -154,6 +160,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="BoundingSphere.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="WireframeRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

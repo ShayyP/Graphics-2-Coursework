@@ -242,7 +242,7 @@ void Graphics2::HandleKeyboardInput()
 	{
 		if (!_freeCam)
 		{
-			_controlledNode->SetYaw(_keyboardSpeedModifier);
+			_controlledNode->SetLeftRight(_keyboardSpeedModifier);
 		}
 		else
 		{
@@ -254,7 +254,7 @@ void Graphics2::HandleKeyboardInput()
 	{
 		if (!_freeCam)
 		{
-			_controlledNode->SetYaw(-_keyboardSpeedModifier);
+			_controlledNode->SetLeftRight(-_keyboardSpeedModifier);
 		}
 		else
 		{
