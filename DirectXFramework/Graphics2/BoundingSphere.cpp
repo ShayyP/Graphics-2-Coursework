@@ -244,7 +244,7 @@ float BoundingSphere::IsIntersectingRay(XMVECTOR origin, XMVECTOR direction)
 		XMFLOAT3 closestPointOnLine;
 		XMStoreFloat3(&closestPointOnLine, origin + (direction * dot.x));
 
-		if (Distance(closestPointOnLine, centrePos) <= radius * 5)
+		if (Distance(closestPointOnLine, centrePos) <= radius * 3)
 		{
 			XMFLOAT3 distanceOfNodeFromCamera;
 			XMStoreFloat3(&distanceOfNodeFromCamera, XMVector3Length(v));
