@@ -1,7 +1,45 @@
 ﻿  BoundingSphere.cpp
+  Camera.cpp
+  Cube.cpp
+  DDSTextureLoader.cpp
+  Framework.cpp
+  DirectXFramework.cpp
+  GamePadController.cpp
+  Graphics2.cpp
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\xmemory(204,33): warning C4244: 'argument': conversion from '_Ty' to 'float', possible loss of data
+          with
+          [
+              _Ty=int
+          ]
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\memory(1491): message : see reference to function template instantiation 'void std::_Construct_in_place<_Ty,const wchar_t(&)[4],const wchar_t(&)[11],int>(_Ty &,const wchar_t (&)[4],const wchar_t (&)[11],int &&) noexcept(false)' being compiled
+          with
+          [
+              _Ty=SkyNode
+          ]
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\memory(1591): message : see reference to function template instantiation 'std::_Ref_count_obj2<_Ty>::_Ref_count_obj2<const wchar_t(&)[4],const wchar_t(&)[11],int>(const wchar_t (&)[4],const wchar_t (&)[11],int &&)' being compiled
+          with
+          [
+              _Ty=SkyNode
+          ]
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\memory(1591): message : see reference to function template instantiation 'std::_Ref_count_obj2<_Ty>::_Ref_count_obj2<const wchar_t(&)[4],const wchar_t(&)[11],int>(const wchar_t (&)[4],const wchar_t (&)[11],int &&)' being compiled
+          with
+          [
+              _Ty=SkyNode
+          ]
+E:\Year 2\Graphics 2\Repo\Graphics-2-Coursework\DirectXFramework\Graphics2\Graphics2.cpp(18): message : see reference to function template instantiation 'std::shared_ptr<SkyNode> std::make_shared<SkyNode,const wchar_t(&)[4],const wchar_t(&)[11],int>(const wchar_t (&)[4],const wchar_t (&)[11],int &&)' being compiled
+  Mesh.cpp
+  MeshNode.cpp
+  MeshRenderer.cpp
+  MoveableNode.cpp
+  ResourceManager.cpp
+  SceneGraph.cpp
+  SkyNode.cpp
+  TerrainNode.cpp
+E:\Year 2\Graphics 2\Repo\Graphics-2-Coursework\DirectXFramework\Graphics2\TerrainNode.cpp(527,14): warning C4244: '=': conversion from 'float' to 'BYTE', possible loss of data
+  WICTextureLoader.cpp
+  WireframeRenderer.cpp
   Generating code
-  1 of 2342 functions (<0.1%) were compiled, the rest were copied from previous compilation.
-    0 functions were new in current compilation
-    6 functions had inline decision re-evaluated but remain unchanged
+  Previous IPDB not found, fall back to full compilation.
+  All 2342 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
   Finished generating code
   Graphics2.vcxproj -> E:\Year 2\Graphics 2\Repo\Graphics-2-Coursework\DirectXFramework\x64\Release\Graphics2.exe

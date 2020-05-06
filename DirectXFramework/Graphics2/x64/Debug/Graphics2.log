@@ -1,5 +1,4 @@
-﻿  TerrainNode.cpp
-E:\Year 2\Graphics 2\Repo\Graphics-2-Coursework\DirectXFramework\Graphics2\TerrainNode.cpp(526,14): warning C4244: '=': conversion from 'float' to 'BYTE', possible loss of data
+﻿  GamePadController.cpp
   Graphics2.vcxproj -> E:\Year 2\Graphics 2\Repo\Graphics-2-Coursework\DirectXFramework\x64\Debug\Graphics2.exe
   E:\Year 2\Graphics 2\Repo\Graphics-2-Coursework\DirectXFramework\Graphics2\*.dll 
   The system cannot find the file specified.

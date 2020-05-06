@@ -1,5 +1,4 @@
 #include "TerrainNode.h"
-#include <fstream>
 
 bool TerrainNode::Initialise()
 {
@@ -135,7 +134,7 @@ void TerrainNode::BuildGeometryBuffers()
 			float U1 = Random(0.7f, 1.0f);
 			float V0 = Random(0.0f, 0.3f);
 			float V1 = Random(0.7f, 1.0f);
-			//								  Position         X                                    Y                                                                               Z                                     Normal                      TexCoord U  V   BlendMapTexCoord U            V                   WaterTexCoord
+			//								  Position         X                                    Y                                                                               Z                                     Normal                      TexCoord U  V     BlendMapTexCoord U           V                  WaterTexCoord
 			_vertices.push_back(TerrainVertex(XMFLOAT3((float)(x * _spacing) + _terrainStart,       _heightValues[(x * _numberOfXPoints) + z + 1] * _numberOfXPoints,       (float)((z + 1) * _spacing) + _terrainStart), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2(U0, V0), XMFLOAT2(x * offsetU,	    (z + 1) * offsetV), XMFLOAT2(0.0f, 0.0f))); // v1
 			_vertices.push_back(TerrainVertex(XMFLOAT3((float)((x + 1) * _spacing) + _terrainStart, _heightValues[((x + 1) * _numberOfXPoints) + z + 1] * _numberOfXPoints, (float)((z + 1) * _spacing) + _terrainStart), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2(U1, V0), XMFLOAT2((x + 1) * offsetU, (z + 1) * offsetV), XMFLOAT2(1.0f, 0.0f))); // v2
 			_vertices.push_back(TerrainVertex(XMFLOAT3((float)(x * _spacing) + _terrainStart,       _heightValues[(x * _numberOfXPoints) + z] * _numberOfXPoints,           (float)(z * _spacing) + _terrainStart),       XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2(U0, V1), XMFLOAT2(x * offsetU,		 z * offsetV),		XMFLOAT2(0.0f, 1.0f))); // v3
@@ -171,10 +170,10 @@ void TerrainNode::BuildGeometryBuffers()
 			XMVECTOR faceNormal = XMVector3Cross(v2 - v1, v3 - v1);
 
 			// Add face normal to total in this square
-			XMStoreFloat3(&_vertices[index].Normal, XMLoadFloat3(&_vertices[index].Normal) + faceNormal);
-			XMStoreFloat3(&_vertices[index + 1].Normal, XMLoadFloat3(&_vertices[index + 1].Normal) + faceNormal);
-			XMStoreFloat3(&_vertices[index + 2].Normal, XMLoadFloat3(&_vertices[index + 2].Normal) + faceNormal);
-			XMStoreFloat3(&_vertices[index + 3].Normal, XMLoadFloat3(&_vertices[index + 3].Normal) + faceNormal);
+			DirectX::XMStoreFloat3(&_vertices[index].Normal, XMVectorAdd(XMLoadFloat3(&_vertices[index].Normal), faceNormal));
+			DirectX::XMStoreFloat3(&_vertices[index + 1].Normal, XMVectorAdd(XMLoadFloat3(&_vertices[index + 1].Normal), faceNormal));
+			DirectX::XMStoreFloat3(&_vertices[index + 2].Normal, XMVectorAdd(XMLoadFloat3(&_vertices[index + 2].Normal), faceNormal));
+			DirectX::XMStoreFloat3(&_vertices[index + 3].Normal, XMVectorAdd(XMLoadFloat3(&_vertices[index + 3].Normal), faceNormal));
 
 			// Add face normal to surrounding squares
 			// Check if we are at the edge of the grid, without this we will get a vertex out of bounds error
@@ -185,17 +184,17 @@ void TerrainNode::BuildGeometryBuffers()
 				// Below to the left
 				if (z > 0)
 				{
-					XMStoreFloat3(&_vertices[index - multiplier - 3].Normal, XMLoadFloat3(&_vertices[index - multiplier - 3].Normal) + faceNormal);
+					DirectX::XMStoreFloat3(&_vertices[index - multiplier - 3].Normal, XMVectorAdd(XMLoadFloat3(&_vertices[index - multiplier - 3].Normal), faceNormal));
 				}
 
 				// Directly to the left
-				XMStoreFloat3(&_vertices[index - multiplier + 1].Normal, XMLoadFloat3(&_vertices[index - multiplier + 1].Normal) + faceNormal);
-				XMStoreFloat3(&_vertices[index - multiplier + 3].Normal, XMLoadFloat3(&_vertices[index - multiplier + 3].Normal) + faceNormal);
+				DirectX::XMStoreFloat3(&_vertices[index - multiplier + 1].Normal, XMVectorAdd(XMLoadFloat3(&_vertices[index - multiplier + 1].Normal), faceNormal));
+				DirectX::XMStoreFloat3(&_vertices[index - multiplier + 3].Normal, XMVectorAdd(XMLoadFloat3(&_vertices[index - multiplier + 3].Normal), faceNormal));
 
 				// Above to the left
 				if (z < _numberOfZPoints - 2)
 				{
-					XMStoreFloat3(&_vertices[index - multiplier + 7].Normal, XMLoadFloat3(&_vertices[index - multiplier + 7].Normal) + faceNormal);
+					DirectX::XMStoreFloat3(&_vertices[index - multiplier + 7].Normal, XMVectorAdd(XMLoadFloat3(&_vertices[index - multiplier + 7].Normal), faceNormal));
 				}
 			}
 
@@ -205,32 +204,32 @@ void TerrainNode::BuildGeometryBuffers()
 				// Below to the right
 				if (z > 0)
 				{
-					XMStoreFloat3(&_vertices[index + multiplier - 4].Normal, XMLoadFloat3(&_vertices[index + multiplier - 4].Normal) + faceNormal);
+					DirectX::XMStoreFloat3(&_vertices[index + multiplier - 4].Normal, XMVectorAdd(XMLoadFloat3(&_vertices[index + multiplier - 4].Normal), faceNormal));
 				}
 
 				// Directly to the right
-				XMStoreFloat3(&_vertices[index + multiplier].Normal, XMLoadFloat3(&_vertices[index + multiplier].Normal) + faceNormal);
-				XMStoreFloat3(&_vertices[index + multiplier + 2].Normal, XMLoadFloat3(&_vertices[index + multiplier + 2].Normal) + faceNormal);
+				DirectX::XMStoreFloat3(&_vertices[index + multiplier].Normal, XMVectorAdd(XMLoadFloat3(&_vertices[index + multiplier].Normal), faceNormal));
+				DirectX::XMStoreFloat3(&_vertices[index + multiplier + 2].Normal, XMVectorAdd(XMLoadFloat3(&_vertices[index + multiplier + 2].Normal), faceNormal));
 
 				// Above to the right
 				if (z < _numberOfZPoints - 2)
 				{
-					XMStoreFloat3(&_vertices[index + multiplier + 6].Normal, XMLoadFloat3(&_vertices[index + multiplier + 6].Normal) + faceNormal);
+					DirectX::XMStoreFloat3(&_vertices[index + multiplier + 6].Normal, XMVectorAdd(XMLoadFloat3(&_vertices[index + multiplier + 6].Normal), faceNormal));
 				}
 			}
 
 			// Square below
 			if (z > 0)
 			{
-				XMStoreFloat3(&_vertices[index - 3].Normal, XMLoadFloat3(&_vertices[index - 3].Normal) + faceNormal);
-				XMStoreFloat3(&_vertices[index - 4].Normal, XMLoadFloat3(&_vertices[index - 4].Normal) + faceNormal);
+				DirectX::XMStoreFloat3(&_vertices[index - 3].Normal, XMVectorAdd(XMLoadFloat3(&_vertices[index - 3].Normal), faceNormal));
+				DirectX::XMStoreFloat3(&_vertices[index - 4].Normal, XMVectorAdd(XMLoadFloat3(&_vertices[index - 4].Normal), faceNormal));
 			}
 
 			// Square above
 			if (z < _numberOfZPoints - 2)
 			{
-				XMStoreFloat3(&_vertices[index + 6].Normal, XMLoadFloat3(&_vertices[index + 6].Normal) + faceNormal);
-				XMStoreFloat3(&_vertices[index + 7].Normal, XMLoadFloat3(&_vertices[index + 7].Normal) + faceNormal);
+				DirectX::XMStoreFloat3(&_vertices[index + 6].Normal, XMVectorAdd(XMLoadFloat3(&_vertices[index + 6].Normal), faceNormal));
+				DirectX::XMStoreFloat3(&_vertices[index + 7].Normal, XMVectorAdd(XMLoadFloat3(&_vertices[index + 7].Normal), faceNormal));
 			}
 
 			index += 4;
@@ -240,7 +239,7 @@ void TerrainNode::BuildGeometryBuffers()
 	// Normalise all vertex normals
 	for (TerrainVertex& vertex : _vertices)
 	{
-		XMStoreFloat3(&vertex.Normal, XMVector3Normalize(XMLoadFloat3(&vertex.Normal)));
+		DirectX::XMStoreFloat3(&vertex.Normal, XMVector3Normalize(XMLoadFloat3(&vertex.Normal)));
 	}
 }
 
@@ -604,7 +603,7 @@ float TerrainNode::GetHeightAtPoint(float x, float z)
 	XMVECTOR faceNormal = XMVector3Cross(XMLoadFloat3(&other) - XMLoadFloat3(&v0), XMLoadFloat3(&v2) - XMLoadFloat3(&v0));
 	faceNormal = XMVector3Normalize(faceNormal);
 	XMFLOAT3 N;
-	XMStoreFloat3(&N, faceNormal);
+	DirectX::XMStoreFloat3(&N, faceNormal);
 
 	float y = v0.y + ((N.x * dx + N.z * dz) / -N.y);
 

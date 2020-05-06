@@ -19,6 +19,7 @@ Camera::~Camera()
 {
 }
 
+// Getters and setters
 void Camera::SetPitch(float pitch)
 {
     _pitch += XMConvertToRadians(pitch);
@@ -89,6 +90,7 @@ void Camera::SetPosition(float x, float y, float z)
     _position = XMFLOAT4(x, y, z, 0.0f);
 }
 
+// This update is called when freecam is enabled and the camera is not following anything
 void Camera::Update(void)
 {
 	XMVECTOR cameraPosition;
@@ -124,6 +126,7 @@ void Camera::Update(void)
 	XMStoreFloat4x4(&_viewMatrix, XMMatrixLookAtLH(cameraPosition, cameraTarget, _up));
 }
 
+// This update is called when freecam is disabled and the values passed in are the values for the node it is following
 void Camera::Update(XMVECTOR position, float yaw, float pitch, float roll, float forward, float up)
 {
 	// Yaw (rotation around the Y axis) will have an impact on the forward and right vectors

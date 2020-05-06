@@ -59,24 +59,27 @@ char* GamePadController::ProcessGameController()
 		_thumbRY = 0;
 	}
 
-	// Check left and right triggers
-	BYTE leftTrigger = _controllerState.Gamepad.bLeftTrigger;
-	if (leftTrigger <= XINPUT_GAMEPAD_TRIGGER_THRESHOLD)
-	{
-		leftTrigger = 0;
-	}
-
-	BYTE rightTrigger = _controllerState.Gamepad.bRightTrigger;
-	if (rightTrigger <= XINPUT_GAMEPAD_TRIGGER_THRESHOLD)
-	{
-		rightTrigger = 0;
-	}
-
 	// Test the different digital buttons
 	WORD buttons = _controllerState.Gamepad.wButtons;
 	if (buttons & XINPUT_GAMEPAD_A)
 	{
 		return "A";
+	}
+	if (buttons & XINPUT_GAMEPAD_X)
+	{
+		return "X";
+	}
+	if (buttons & XINPUT_GAMEPAD_Y)
+	{
+		return "Y";
+	}
+
+	// Check right trigger
+	BYTE rightTrigger = _controllerState.Gamepad.bRightTrigger;
+	if (rightTrigger <= XINPUT_GAMEPAD_TRIGGER_THRESHOLD)
+	{
+		rightTrigger = 0;
+		return "RT";
 	}
 
 	// Other button mask values that can be used are:

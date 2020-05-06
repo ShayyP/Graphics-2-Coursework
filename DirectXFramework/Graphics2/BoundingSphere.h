@@ -28,8 +28,6 @@ public:
 	virtual float IsIntersectingRay(XMVECTOR origin, XMVECTOR direction);
 
 private:
-	shared_ptr<Mesh>				   _mesh = nullptr;
-	shared_ptr<SubMesh>				   _subMesh = nullptr;
 	vector<shared_ptr<BoundingSphere>> _subBounds;
 	float							   _radius;
 	XMFLOAT3						   _centrePos;

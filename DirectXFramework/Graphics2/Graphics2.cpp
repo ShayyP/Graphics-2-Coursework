@@ -4,8 +4,6 @@ Graphics2 app;
 
 void Graphics2::CreateSceneGraph()
 {
-	_inputMode = InputMode::Keyboard;
-
 	SceneGraphPointer sceneGraph = GetSceneGraph();
 	GetCamera()->SetPosition(0.0f, 0.0f, 0.0f);
 
@@ -179,6 +177,10 @@ void Graphics2::UpdateSceneGraph()
 		if (!_freeCam)
 		{
 			_freeCam = true;
+			if (_freeCam)
+			{
+				OnFreeCam();
+			}
 		}
 		// Handling input
 		if (_inputMode == InputMode::Keyboard)
@@ -321,6 +323,10 @@ void Graphics2::HandleKeyboardInput()
 		if (_freeCamPressed)
 		{
 			_freeCam = !_freeCam;
+			if (_freeCam)
+			{
+				OnFreeCam();
+			}
 			_freeCamPressed = false;
 		}
 	}
@@ -328,32 +334,46 @@ void Graphics2::HandleKeyboardInput()
 	// Click
 	if (GetAsyncKeyState(VK_LBUTTON) < 0)
 	{
-		_mouseClicked = true;
+		_rayPressed = true;
 	}
 	else
 	{
-		if (_mouseClicked)
+		if (_rayPressed)
 		{
 			POINT p;
 			if (GetCursorPos(&p))
 			{
+				ScreenToClient(GetDXFramework()->GetHWnd(), &p);
 				HandleClick(static_cast<float>(p.x), static_cast<float>(p.y));
 			}
-			_mouseClicked = false;
+			_rayPressed = false;
 		}
 	}
 
 	// Toggle rendering of bounding volumes with R
 	if (GetAsyncKeyState(0x52) < 0)
 	{
-		_rPressed = true;
+		_renderPressed = true;
 	}
 	else
 	{
-		if (_rPressed)
+		if (_renderPressed)
 		{
 			GetSceneGraph()->ToggleRenderBoundingVolumes();
-			_rPressed = false;
+			_renderPressed = false;
+		}
+	}
+
+	if (GetAsyncKeyState(0x58) < 0)
+	{
+		_switchInputPressed = true;
+	}
+	else
+	{
+		if (_switchInputPressed)
+		{
+			_inputMode = InputMode::Controller;
+			_switchInputPressed = false;
 		}
 	}
 }
@@ -361,7 +381,8 @@ void Graphics2::HandleKeyboardInput()
 void Graphics2::HandleControllerInput()
 {
 	// Handling controller input
-	if (GetController()->ProcessGameController() == "A")
+	char* buttonPressed = GetController()->ProcessGameController();
+	if (buttonPressed == "A")
 	{
 		_freeCamPressed = true;
 	}
@@ -370,9 +391,53 @@ void Graphics2::HandleControllerInput()
 		if (_freeCamPressed)
 		{
 			_freeCam = !_freeCam;
+			if (_freeCam)
+			{
+				OnFreeCam();
+			}
 			_freeCamPressed = false;
 		}
 	}
+
+	if (buttonPressed == "RT")
+	{
+		_rayPressed = true;
+	}
+	else
+	{
+		if (_rayPressed)
+		{
+			HandleClick(static_cast<float>(GetDXFramework()->GetWindowWidth()/2), static_cast<float>(GetDXFramework()->GetWindowHeight() / 2));
+			_rayPressed = false;
+		}
+	}
+
+	if (buttonPressed == "X")
+	{
+		_renderPressed = true;
+	}
+	else
+	{
+		if (_renderPressed)
+		{
+			GetSceneGraph()->ToggleRenderBoundingVolumes();
+			_renderPressed = false;
+		}
+	}
+
+	if (buttonPressed == "Y")
+	{
+		_switchInputPressed = true;
+	}
+	else
+	{
+		if (_switchInputPressed)
+		{
+			_inputMode = InputMode::Keyboard;
+			_switchInputPressed = false;
+		}
+	}
+
 	if (_freeCam)
 	{
 		// Movement
@@ -455,4 +520,11 @@ void Graphics2::HandleClick(float mouseX, float mouseY)
 			_pickableNodes.erase(pos);
 		}
 	}
+}
+
+void Graphics2::OnFreeCam()
+{
+	GetCamera()->SetTotalPitch(_controlledNode->GetPitch());
+	GetCamera()->SetTotalRoll(_controlledNode->GetRoll());
+	GetCamera()->SetTotalYaw(_controlledNode->GetYaw());
 }

@@ -3,6 +3,7 @@
 #include "DDSTextureLoader.h"
 #include "BoundingSphere.h"
 #include "Structs.h"
+#include <fstream>
 
 // Scene node that represents terrain. Handles generation from a height map, textures and some collision
 class TerrainNode : public SceneNode
