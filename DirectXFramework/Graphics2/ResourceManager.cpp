@@ -364,8 +364,8 @@ shared_ptr<Mesh> ResourceManager::LoadModelFromFile(wstring modelName)
         // coordinates is a future enhancement.
 	    aiVector3D * subMeshTexCoords = subMesh->mTextureCoords[0];
 		vector<XMFLOAT3> positions = vector<XMFLOAT3>();
-	    VERTEX * modelVertices = new VERTEX[numVertices];
-	    VERTEX * currentVertex = modelVertices;
+	    Vertex * modelVertices = new Vertex[numVertices];
+	    Vertex * currentVertex = modelVertices;
 	    for (unsigned int i = 0; i < numVertices; i++)
 	    {
 			currentVertex->Position = XMFLOAT3(subMeshVertices->x, subMeshVertices->y, subMeshVertices->z);
@@ -376,7 +376,7 @@ shared_ptr<Mesh> ResourceManager::LoadModelFromFile(wstring modelName)
             if (!hasTexCoords)
             {
                 // If the model does not have texture coordinates, set them to 0
-				currentVertex->TexCoord = XMFLOAT2(0.0f, 0.0f);
+				currentVertex->TextureCoordinate = XMFLOAT2(0.0f, 0.0f);
             }
             else
             {
@@ -385,19 +385,19 @@ shared_ptr<Mesh> ResourceManager::LoadModelFromFile(wstring modelName)
                 // here are no smaller than -1.0 - this may not be a valid assumption.
 		        if (subMeshTexCoords->x < 0)
 		        {
-			        currentVertex->TexCoord.x = subMeshTexCoords->x + 1.0f;
+			        currentVertex->TextureCoordinate.x = subMeshTexCoords->x + 1.0f;
 		        }
 		        else
 		        {
-			        currentVertex->TexCoord.x = subMeshTexCoords->x;
+			        currentVertex->TextureCoordinate.x = subMeshTexCoords->x;
 		        }
 		        if (subMeshTexCoords->y < 0)
 		        {
-			        currentVertex->TexCoord.y = subMeshTexCoords->y + 1.0f;
+			        currentVertex->TextureCoordinate.y = subMeshTexCoords->y + 1.0f;
 		        }
 		        else
 		        {
-			        currentVertex->TexCoord.y = subMeshTexCoords->y;
+			        currentVertex->TextureCoordinate.y = subMeshTexCoords->y;
 		        }
 		        subMeshTexCoords++;
             }
@@ -406,7 +406,7 @@ shared_ptr<Mesh> ResourceManager::LoadModelFromFile(wstring modelName)
 
 		D3D11_BUFFER_DESC vertexBufferDescriptor;
 		vertexBufferDescriptor.Usage = D3D11_USAGE_IMMUTABLE;
-		vertexBufferDescriptor.ByteWidth = sizeof(VERTEX) * numVertices;
+		vertexBufferDescriptor.ByteWidth = sizeof(Vertex) * numVertices;
 		vertexBufferDescriptor.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 		vertexBufferDescriptor.CPUAccessFlags = 0;
 		vertexBufferDescriptor.MiscFlags = 0;

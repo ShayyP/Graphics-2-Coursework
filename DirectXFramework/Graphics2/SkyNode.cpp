@@ -15,14 +15,14 @@ bool SkyNode::Initialise()
 
 void SkyNode::Render()
 {
-	XMVECTOR cameraPos = DirectXFramework::GetDXFramework()->GetCamera()->GetCameraPosition();
+	XMVECTOR cameraPos = DirectXFramework::GetDXFramework()->GetCamera()->GetPosition();
 	XMFLOAT3 cameraPosFloat;
 	XMStoreFloat3(&cameraPosFloat, cameraPos);
 
 	// Calculate the world x view x projection transformation
 	XMMATRIX completeTransformation = XMLoadFloat4x4(&_combinedWorldTransformation) * XMMatrixTranslation(cameraPosFloat.x, cameraPosFloat.y, cameraPosFloat.z) * DirectXFramework::GetDXFramework()->GetCamera()->GetViewMatrix() * DirectXFramework::GetDXFramework()->GetProjectionTransformation();
 
-	SkyCBUFFER cBuffer;
+	BasicCBUFFER cBuffer;
 	cBuffer.CompleteTransformation = XMMatrixTranspose(completeTransformation);
 
 	// Update the constant buffer 
@@ -195,13 +195,11 @@ void SkyNode::BuildDepthStencilState()
 
 void SkyNode::BuildTexture()
 {
-
 	ThrowIfFailed(CreateDDSTextureFromFile(_device.Get(),
 		_texturePath.c_str(),
 		nullptr,
 		_texture.GetAddressOf()
 	));
-
 }
 
 void SkyNode::BuildShaders()
@@ -252,7 +250,7 @@ void SkyNode::BuildConstantBuffer()
 	D3D11_BUFFER_DESC bufferDesc;
 	ZeroMemory(&bufferDesc, sizeof(bufferDesc));
 	bufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	bufferDesc.ByteWidth = sizeof(SkyCBUFFER);
+	bufferDesc.ByteWidth = sizeof(BasicCBUFFER);
 	bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 
 	ThrowIfFailed(_device->CreateBuffer(&bufferDesc, NULL, _constantBuffer.GetAddressOf()));

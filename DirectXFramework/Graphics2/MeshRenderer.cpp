@@ -62,7 +62,7 @@ void MeshRenderer::RenderNode(shared_ptr<Node> node, bool renderTransparent)
 		if ((renderTransparent && opacity < 1.0f) ||
 			(!renderTransparent && opacity == 1.0f))
 		{
-			UINT stride = sizeof(VERTEX);
+			UINT stride = sizeof(Vertex);
 			UINT offset = 0;
 			_vertexBuffer = subMesh->GetVertexBuffer();
 			_deviceContext->IASetVertexBuffers(0, 1, _vertexBuffer.GetAddressOf(), &stride, &offset);

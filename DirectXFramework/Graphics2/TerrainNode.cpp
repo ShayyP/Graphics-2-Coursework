@@ -3,11 +3,14 @@
 
 bool TerrainNode::Initialise()
 {
-	BuildGeometryBuffers();
+	_device = DirectXFramework::GetDXFramework()->GetDevice();
+	_deviceContext = DirectXFramework::GetDXFramework()->GetDeviceContext();
 
 	LoadTerrainTextures();
-
+	BuildWaterNormals();
+	BuildGeometryBuffers();
 	GenerateBlendMap();
+	BuildBuffers();
 
 	BuildShaders();
 	BuildVertexLayout();
@@ -21,16 +24,16 @@ bool TerrainNode::Initialise()
 void TerrainNode::Render()
 {
 	// Calculate the world x view x projection transformation
-	XMMATRIX completeTransformation = XMLoadFloat4x4(&_combinedWorldTransformation) * DirectXFramework::GetDXFramework()->GetCamera()->GetViewMatrix() * DirectXFramework::GetDXFramework()->GetProjectionTransformation();
+	XMMATRIX completeTransformation = XMLoadFloat4x4(&_worldTransformation) * DirectXFramework::GetDXFramework()->GetCamera()->GetViewMatrix() * DirectXFramework::GetDXFramework()->GetProjectionTransformation();
 
 	// Update the constant buffer 
 	CBUFFER cBuffer;
 	cBuffer.CompleteTransformation = completeTransformation;
-	cBuffer.WorldTransformation = XMLoadFloat4x4(&_combinedWorldTransformation);
+	cBuffer.WorldTransformation = XMLoadFloat4x4(&_worldTransformation);
 	cBuffer.AmbientColor = XMFLOAT4(0.6f, 0.6f, 0.6f, 1.0f);
-	cBuffer.LightVector = XMVector4Normalize(XMVectorSet(1.0f, 1.0f, 0.0f, 0.0f));
+	cBuffer.LightVector = XMVector4Normalize(XMVectorSet(0.5f, -1.0f, -1.0f, 0.0f));
 	cBuffer.LightColor = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
-	XMStoreFloat4(&cBuffer.CameraPosition, DirectXFramework::GetDXFramework()->GetCamera()->GetCameraPosition());
+	XMStoreFloat4(&cBuffer.CameraPosition, DirectXFramework::GetDXFramework()->GetCamera()->GetPosition());
 
 	_deviceContext->VSSetShader(_vertexShader.Get(), 0, 0);
 	_deviceContext->PSSetShader(_pixelShader.Get(), 0, 0);
@@ -43,16 +46,24 @@ void TerrainNode::Render()
 	_deviceContext->IASetIndexBuffer(_indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 	cBuffer.DiffuseCoefficient = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
 	cBuffer.SpecularCoefficient = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
-	cBuffer.Shininess = 1.0f;
+	cBuffer.Shininess = 3.0f;
 	cBuffer.Opacity = 1.0f;
 	_deviceContext->UpdateSubresource(_constantBuffer.Get(), 0, 0, &cBuffer, 0, 0);
 	_deviceContext->VSSetConstantBuffers(0, 1, _constantBuffer.GetAddressOf());
 	_deviceContext->PSSetConstantBuffers(0, 1, _constantBuffer.GetAddressOf());
 	_deviceContext->PSSetShaderResources(0, 1, _blendMapResourceView.GetAddressOf());
 	_deviceContext->PSSetShaderResources(1, 1, _texturesResourceView.GetAddressOf());
+	_deviceContext->PSSetShaderResources(2, 1, _waterNormalsResourceView[_normalMap % 120].GetAddressOf());
 	_deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	_deviceContext->RSSetState(_defaultRasteriserState.Get());
 	_deviceContext->DrawIndexed(static_cast<UINT>(_indices.size()), 0, 0);
+
+	// Increment the animation frame to be used every 5 frames
+	_frame++;
+	if (_frame % 5 == 0)
+	{
+		_normalMap++;
+	}
 }
 
 void TerrainNode::Shutdown()
@@ -124,11 +135,11 @@ void TerrainNode::BuildGeometryBuffers()
 			float U1 = Random(0.7f, 1.0f);
 			float V0 = Random(0.0f, 0.3f);
 			float V1 = Random(0.7f, 1.0f);
-			//								  Position         X                                    Y                                                                               Z                                     Normal                      TexCoord U  V   BlendMapTexCoord U            V
-			_vertices.push_back(TerrainVertex(XMFLOAT3((float)(x * _spacing) + _terrainStart,       _heightValues[(x * _numberOfXPoints) + z + 1] * _numberOfXPoints,       (float)((z + 1) * _spacing) + _terrainStart), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2(U0, V0), XMFLOAT2(x * offsetU,	      (z + 1) * offsetV))); // v1
-			_vertices.push_back(TerrainVertex(XMFLOAT3((float)((x + 1) * _spacing) + _terrainStart, _heightValues[((x + 1) * _numberOfXPoints) + z + 1] * _numberOfXPoints, (float)((z + 1) * _spacing) + _terrainStart), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2(U1, V0), XMFLOAT2((x + 1) * offsetU, (z + 1) * offsetV))); // v2
-			_vertices.push_back(TerrainVertex(XMFLOAT3((float)(x * _spacing) + _terrainStart,       _heightValues[(x * _numberOfXPoints) + z] * _numberOfXPoints,           (float)(z * _spacing) + _terrainStart),       XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2(U0, V1), XMFLOAT2(x * offsetU,		   z * offsetV))); // v3
-			_vertices.push_back(TerrainVertex(XMFLOAT3((float)((x + 1) * _spacing) + _terrainStart, _heightValues[((x + 1) * _numberOfXPoints) + z] * _numberOfXPoints,     (float)(z * _spacing) + _terrainStart),       XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2(U1, V1), XMFLOAT2((x + 1) * offsetU,  z * offsetV))); // v4
+			//								  Position         X                                    Y                                                                               Z                                     Normal                      TexCoord U  V   BlendMapTexCoord U            V                   WaterTexCoord
+			_vertices.push_back(TerrainVertex(XMFLOAT3((float)(x * _spacing) + _terrainStart,       _heightValues[(x * _numberOfXPoints) + z + 1] * _numberOfXPoints,       (float)((z + 1) * _spacing) + _terrainStart), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2(U0, V0), XMFLOAT2(x * offsetU,	    (z + 1) * offsetV), XMFLOAT2(0.0f, 0.0f))); // v1
+			_vertices.push_back(TerrainVertex(XMFLOAT3((float)((x + 1) * _spacing) + _terrainStart, _heightValues[((x + 1) * _numberOfXPoints) + z + 1] * _numberOfXPoints, (float)((z + 1) * _spacing) + _terrainStart), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2(U1, V0), XMFLOAT2((x + 1) * offsetU, (z + 1) * offsetV), XMFLOAT2(1.0f, 0.0f))); // v2
+			_vertices.push_back(TerrainVertex(XMFLOAT3((float)(x * _spacing) + _terrainStart,       _heightValues[(x * _numberOfXPoints) + z] * _numberOfXPoints,           (float)(z * _spacing) + _terrainStart),       XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2(U0, V1), XMFLOAT2(x * offsetU,		 z * offsetV),		XMFLOAT2(0.0f, 1.0f))); // v3
+			_vertices.push_back(TerrainVertex(XMFLOAT3((float)((x + 1) * _spacing) + _terrainStart, _heightValues[((x + 1) * _numberOfXPoints) + z] * _numberOfXPoints,     (float)(z * _spacing) + _terrainStart),       XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2(U1, V1), XMFLOAT2((x + 1) * offsetU,  z * offsetV),		XMFLOAT2(1.0f, 1.0f))); // v4
 
 			UINT v1 = static_cast<UINT>(_vertices.size()) - 4;
 			UINT v2 = v1 + 1;
@@ -231,9 +242,12 @@ void TerrainNode::BuildGeometryBuffers()
 	{
 		XMStoreFloat3(&vertex.Normal, XMVector3Normalize(XMLoadFloat3(&vertex.Normal)));
 	}
+}
 
+void TerrainNode::BuildBuffers()
+{
 	// Setup the structure that specifies how big the vertex 
-    // buffer should be
+// buffer should be
 	D3D11_BUFFER_DESC vertexBufferDescriptor;
 	vertexBufferDescriptor.Usage = D3D11_USAGE_IMMUTABLE;
 	vertexBufferDescriptor.ByteWidth = sizeof(TerrainVertex) * static_cast<UINT>(_vertices.size());
@@ -321,7 +335,8 @@ void TerrainNode::BuildVertexLayout()
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT , D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT , D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 1, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT , D3D11_INPUT_PER_VERTEX_DATA, 0 }
+		{ "TEXCOORD", 1, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT , D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 2, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT , D3D11_INPUT_PER_VERTEX_DATA, 0 }
 	};
 
 	ThrowIfFailed(_device->CreateInputLayout(vertexDesc, ARRAYSIZE(vertexDesc), _vertexShaderByteCode->GetBufferPointer(), _vertexShaderByteCode->GetBufferSize(), _layout.GetAddressOf()));
@@ -347,6 +362,29 @@ void TerrainNode::BuildTexture()
 		nullptr,
 		_texture.GetAddressOf()
 	));
+}
+
+void TerrainNode::BuildWaterNormals()
+{
+	// Load water normal maps
+	for (int i = 1; i <= 120; i++)
+	{
+		wstring texturePath = L"" + to_wstring(i);
+		while (texturePath.size() < 4)
+		{
+			texturePath = L"0" + texturePath;
+		}
+		texturePath = L"Water\\" + texturePath + L".png";
+		ComPtr<ID3D11ShaderResourceView> waterNormalMap;
+		// Load water normal map
+		ThrowIfFailed(CreateWICTextureFromFile(_device.Get(),
+			_deviceContext.Get(),
+			texturePath.c_str(),
+			nullptr,
+			waterNormalMap.GetAddressOf()
+		));
+		_waterNormalsResourceView[i - 1] = waterNormalMap;
+	}
 }
 
 void TerrainNode::LoadTerrainTextures()

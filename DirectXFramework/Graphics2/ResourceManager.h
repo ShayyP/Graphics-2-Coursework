@@ -5,26 +5,9 @@
 #include <assimp\importer.hpp>
 #include <assimp\scene.h>
 #include <assimp\postprocess.h>
+#include "Structs.h"
 
-struct VERTEX
-{
-	VERTEX(XMFLOAT3 position, XMFLOAT3 normal, XMFLOAT2 texCoord)
-	{
-		Position = position;
-		Normal = normal;
-		TexCoord = texCoord;
-	}
-	VERTEX()
-	{
-		Position = XMFLOAT3(0.0f, 0.0f, 0.0f);
-		Normal = XMFLOAT3(0.0f, 0.0f, 0.0f);
-		TexCoord = XMFLOAT2(0.0f, 0.0f);
-	}
-	XMFLOAT3 Position;
-	XMFLOAT3 Normal;
-	XMFLOAT2 TexCoord;
-};
-
+// Resource manager for the project, handles loading of meshes and basic function of the program
 struct MeshResourceStruct
 {
 	unsigned int			ReferenceCount;

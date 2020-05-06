@@ -4,6 +4,7 @@
 #include <XInput.h>
 #pragma comment(lib, "XInput.lib")
 
+// Class used to managed controller input
 class GamePadController
 {
 public:
@@ -26,9 +27,9 @@ private:
 	DWORD		_leftThumbDeadZoneSquared;
 	DWORD		_rightThumbDeadZoneSquared;
 
-	SHORT _thumbRX;
-	SHORT _thumbRY;
-	SHORT _thumbLX;
-	SHORT _thumbLY;
+	SHORT		_thumbRX;
+	SHORT		_thumbRY;
+	SHORT		_thumbLX;
+	SHORT		_thumbLY;
 };
 

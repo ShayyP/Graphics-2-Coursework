@@ -2,6 +2,7 @@
 #include <list>
 #include "SceneNode.h"
 
+// A scene node that contains all nodes in the scene, applying any updates to all of its children
 class SceneGraph : public SceneNode
 {
 public:
@@ -18,8 +19,12 @@ public:
 	void Remove(SceneNodePointer node);
 	SceneNodePointer Find(wstring name);
 
+	bool GetRenderBoundingVolumes() { return _renderBoundingVolumes; }
+	void ToggleRenderBoundingVolumes() { _renderBoundingVolumes = !_renderBoundingVolumes; }
+
 private:
 	list<SceneNodePointer> _children;
+	bool				   _renderBoundingVolumes = false;
 };
 
 typedef shared_ptr<SceneGraph>			 SceneGraphPointer;

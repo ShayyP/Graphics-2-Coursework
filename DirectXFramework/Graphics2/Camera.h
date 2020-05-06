@@ -2,20 +2,21 @@
 #include "core.h"
 #include "DirectXCore.h"
 
+// Base camera class, MoveableNode inherits from this
 class Camera
 {
 public:
     Camera();
     ~Camera();
 
-    void Update();
+    virtual void Update();
     void Update(XMVECTOR position, float yaw, float pitch, float roll, float forward, float up);
     XMMATRIX GetViewMatrix();
-    XMVECTOR GetCameraPosition();
-    inline XMVECTOR GetForwardVector(){ return _cameraForward; }
-    inline XMVECTOR GetRightVector() { return _cameraRight; }
-    inline XMVECTOR GetUpVector() { return _cameraUp; }
-    void SetCameraPosition(float x, float y, float z);
+    XMVECTOR GetPosition();
+    inline XMVECTOR GetForwardVector(){ return _forward; }
+    inline XMVECTOR GetRightVector() { return _right; }
+    inline XMVECTOR GetUpVector() { return _up; }
+    void SetPosition(float x, float y, float z);
     void SetPitch(float pitch);
 	void SetTotalPitch(float pitch);
 	float GetPitch() const;
@@ -28,20 +29,24 @@ public:
 	void SetLeftRight(float leftRight);
     void SetForwardBack(float forwardBack);
 
-private:
-    XMFLOAT4    _cameraPosition;
+protected:
+    XMFLOAT4   _position;
 
-    XMFLOAT4X4  _viewMatrix;
+    XMFLOAT4X4 _viewMatrix;
 
-    float       _moveLeftRight;
-    float       _moveForwardBack;
+    float      _moveLeftRight;
+    float      _moveForwardBack;
 
-    float       _cameraYaw;
-    float       _cameraPitch;
-    float       _cameraRoll;
+    float      _yaw;
+    float      _pitch;
+    float      _roll;
 
-    XMVECTOR _cameraRight;
-    XMVECTOR _cameraForward;
-    XMVECTOR _cameraUp;
+    XMVECTOR   _right;
+    XMVECTOR   _forward;
+    XMVECTOR   _up;
+
+    XMVECTOR   _defaultForward = XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
+    XMVECTOR   _defaultRight = XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f);
+    XMVECTOR   _defaultUp = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 };
 

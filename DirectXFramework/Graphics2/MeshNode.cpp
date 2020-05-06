@@ -28,9 +28,10 @@ void MeshNode::Render()
 		_renderer->SetAmbientLight(XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f));
 		_renderer->SetDirectionalLight(XMVectorSet(0.0f, -1.0f, 1.0f, 0.0f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f));
 		_renderer->Render();
-#if defined(RENDER_BOUNDING_VOLUMES)
-		_boundingVolume->Render();
-#endif
+		if (DirectXFramework::GetDXFramework()->GetSceneGraph()->GetRenderBoundingVolumes())
+		{
+			_boundingVolume->Render();
+		}
 	}
 }
 

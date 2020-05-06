@@ -27,7 +27,6 @@ BoundingSphere::BoundingSphere(shared_ptr<SubMesh> subMesh)
 	_subMesh = subMesh;
 	
 	// Ritter algorithm
-
 	XMFLOAT3 minX = _subMesh->GetPositions()[0];
 	XMFLOAT3 maxX = minX;
 	XMFLOAT3 minY = minX;

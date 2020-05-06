@@ -15,7 +15,7 @@ void WireframeRenderer::Render(XMMATRIX worldTransform)
 	// Calculate the world x view x projection transformation
 	XMMATRIX completeTransformation = worldTransform * DirectXFramework::GetDXFramework()->GetCamera()->GetViewMatrix() * DirectXFramework::GetDXFramework()->GetProjectionTransformation();
 
-	WireframeCBUFFER cBuffer;
+	BasicCBUFFER cBuffer;
 	cBuffer.CompleteTransformation = completeTransformation;
 
 	_deviceContext->VSSetShader(_vertexShader.Get(), 0, 0);
@@ -140,7 +140,7 @@ void WireframeRenderer::BuildConstantBuffer()
 	D3D11_BUFFER_DESC bufferDesc;
 	ZeroMemory(&bufferDesc, sizeof(bufferDesc));
 	bufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	bufferDesc.ByteWidth = sizeof(WireframeCBUFFER);
+	bufferDesc.ByteWidth = sizeof(BasicCBUFFER);
 	bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 
 	ThrowIfFailed(_device->CreateBuffer(&bufferDesc, NULL, _constantBuffer.GetAddressOf()));

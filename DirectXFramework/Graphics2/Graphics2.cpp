@@ -7,7 +7,7 @@ void Graphics2::CreateSceneGraph()
 	_inputMode = InputMode::Keyboard;
 
 	SceneGraphPointer sceneGraph = GetSceneGraph();
-	GetCamera()->SetCameraPosition(0.0f, 0.0f, 0.0f);
+	GetCamera()->SetPosition(0.0f, 0.0f, 0.0f);
 
 	// Terrain
 	shared_ptr<TerrainNode> terrain = make_shared<TerrainNode>(L"Terrain", L"HeightMaps\\Example_HeightMap.RAW");
@@ -340,6 +340,20 @@ void Graphics2::HandleKeyboardInput()
 				HandleClick(static_cast<float>(p.x), static_cast<float>(p.y));
 			}
 			_mouseClicked = false;
+		}
+	}
+
+	// Toggle rendering of bounding volumes with R
+	if (GetAsyncKeyState(0x52) < 0)
+	{
+		_rPressed = true;
+	}
+	else
+	{
+		if (_rPressed)
+		{
+			GetSceneGraph()->ToggleRenderBoundingVolumes();
+			_rPressed = false;
 		}
 	}
 }

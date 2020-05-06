@@ -15,6 +15,7 @@ cbuffer ConstantBuffer
 
 Texture2D BlendMap : register(t0);
 Texture2DArray TexturesArray : register(t1);
+Texture2D WaterNormals : register(t2);
 
 SamplerState ss
 {
@@ -30,6 +31,7 @@ struct VertexShaderInput
 	float3 Normal : NORMAL;
 	float2 TexCoord : TEXCOORD0;
 	float2 BlendMapTexCoord : TEXCOORD1;
+	float2 WaterTexCoord : TEXCOORD2;
 };
 
 struct PixelShaderInput
@@ -39,6 +41,7 @@ struct PixelShaderInput
 	float4 NormalWS : TEXCOORD3;
 	float2 TexCoord : TEXCOORD0;
 	float2 BlendMapTexCoord : TEXCOORD1;
+	float2 WaterTexCoord : TEXCOORD4;
 };
 
 PixelShaderInput VShader(VertexShaderInput vin)
@@ -50,6 +53,7 @@ PixelShaderInput VShader(VertexShaderInput vin)
 	output.NormalWS = float4(mul((float3x3)worldTransformation, vin.Normal), 1.0f);
 	output.TexCoord = vin.TexCoord;
 	output.BlendMapTexCoord = vin.BlendMapTexCoord;
+	output.WaterTexCoord = vin.WaterTexCoord;
 	return output;
 }
 
@@ -59,6 +63,13 @@ float4 PShader(PixelShaderInput input) : SV_TARGET
 	float4 directionToLight = normalize(-lightVector);
 	float surfaceShininess = shininess;
 	float4 adjustedNormal = normalize(input.NormalWS);
+	// Adjust normal and shininess for water
+	if (input.PositionWS.y < 1024 * 0.03)
+	{
+		float4 waterSample = WaterNormals.Sample(ss, input.WaterTexCoord);
+		adjustedNormal = float4(waterSample.r, waterSample.g, waterSample.b, 0.0f);
+		surfaceShininess = 10;
+	}
 
 	// Calculate diffuse lighting
 	float NdotL = max(0, dot(adjustedNormal, directionToLight));
@@ -91,6 +102,11 @@ float4 PShader(PixelShaderInput input) : SV_TARGET
 	color = lerp(color, c2, t.g);
 	color = lerp(color, c3, t.b);
 	color = lerp(color, c4, t.a);
+	// Blend in water colour
+	if (input.PositionWS.y < 1024 * 0.03)
+	{
+		color = lerp(color, normalize(float4(0, 151, 240, 100)), 0.5);
+	}
 
 	// Combine all components
 	color = (ambientLight + diffuse) * color;

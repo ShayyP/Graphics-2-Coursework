@@ -6,6 +6,8 @@
 
 using namespace std;
 
+// Class for the bounding sphere inheriting from bounding volume
+// Handles all collision detection for nodes using sphere bounds
 class BoundingSphere : public BoundingVolume
 {
 public:
@@ -26,13 +28,11 @@ public:
 	virtual float IsIntersectingRay(XMVECTOR origin, XMVECTOR direction);
 
 private:
-	shared_ptr<Mesh> _mesh = nullptr;
-	shared_ptr<SubMesh> _subMesh = nullptr;
+	shared_ptr<Mesh>				   _mesh = nullptr;
+	shared_ptr<SubMesh>				   _subMesh = nullptr;
 	vector<shared_ptr<BoundingSphere>> _subBounds;
-
-	float _radius;
-	XMFLOAT3 _centrePos;
-
-	shared_ptr<WireframeRenderer> _renderer;
+	float							   _radius;
+	XMFLOAT3						   _centrePos;
+	shared_ptr<WireframeRenderer>      _renderer;
 };
 

@@ -1,28 +1,7 @@
-﻿  Graphics2.cpp
-C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\xmemory(204,33): warning C4244: 'argument': conversion from '_Ty' to 'float', possible loss of data
-          with
-          [
-              _Ty=int
-          ]
-C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\memory(1491): message : see reference to function template instantiation 'void std::_Construct_in_place<_Ty,const wchar_t(&)[4],const wchar_t(&)[11],int>(_Ty &,const wchar_t (&)[4],const wchar_t (&)[11],int &&) noexcept(false)' being compiled
-          with
-          [
-              _Ty=SkyNode
-          ]
-C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\memory(1591): message : see reference to function template instantiation 'std::_Ref_count_obj2<_Ty>::_Ref_count_obj2<const wchar_t(&)[4],const wchar_t(&)[11],int>(const wchar_t (&)[4],const wchar_t (&)[11],int &&)' being compiled
-          with
-          [
-              _Ty=SkyNode
-          ]
-C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.24.28314\include\memory(1591): message : see reference to function template instantiation 'std::_Ref_count_obj2<_Ty>::_Ref_count_obj2<const wchar_t(&)[4],const wchar_t(&)[11],int>(const wchar_t (&)[4],const wchar_t (&)[11],int &&)' being compiled
-          with
-          [
-              _Ty=SkyNode
-          ]
-E:\Year 2\Graphics 2\Repo\Graphics-2-Coursework\DirectXFramework\Graphics2\Graphics2.cpp(81): message : see reference to function template instantiation 'std::shared_ptr<SkyNode> std::make_shared<SkyNode,const wchar_t(&)[4],const wchar_t(&)[11],int>(const wchar_t (&)[4],const wchar_t (&)[11],int &&)' being compiled
+﻿  BoundingSphere.cpp
   Generating code
-  2 of 2271 functions (<0.1%) were compiled, the rest were copied from previous compilation.
+  1 of 2342 functions (<0.1%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
-    5 functions had inline decision re-evaluated but remain unchanged
+    6 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
   Graphics2.vcxproj -> E:\Year 2\Graphics 2\Repo\Graphics-2-Coursework\DirectXFramework\x64\Release\Graphics2.exe
