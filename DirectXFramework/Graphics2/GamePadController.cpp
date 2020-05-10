@@ -73,6 +73,14 @@ char* GamePadController::ProcessGameController()
 	{
 		return "Y";
 	}
+	if (buttons & XINPUT_GAMEPAD_LEFT_SHOULDER)
+	{
+		return "LB";
+	}
+	if (buttons & XINPUT_GAMEPAD_RIGHT_SHOULDER)
+	{
+		return "RB";
+	}
 
 	// Check right trigger
 	BYTE rightTrigger = _controllerState.Gamepad.bRightTrigger;

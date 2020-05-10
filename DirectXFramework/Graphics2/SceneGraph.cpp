@@ -1,5 +1,6 @@
 #include "SceneGraph.h"
 
+// Calls initialise method on all child nodes
 bool SceneGraph::Initialise(void)
 {
 	for (SceneNodePointer child : _children) {
@@ -10,6 +11,7 @@ bool SceneGraph::Initialise(void)
 	return true;
 }
 
+// Updates world transformation then updates all child nodes
 void SceneGraph::Update(FXMMATRIX& currentWorldTransformation)
 {
 	SceneNode::Update(currentWorldTransformation);
@@ -18,6 +20,7 @@ void SceneGraph::Update(FXMMATRIX& currentWorldTransformation)
 	}
 }
 
+// Calls render method on all child nodes
 void SceneGraph::Render(void)
 {
 	for(SceneNodePointer child : _children) {
@@ -25,6 +28,7 @@ void SceneGraph::Render(void)
 	}
 }
 
+// Calls shutdown method on all children
 void SceneGraph::Shutdown(void)
 {
 	for(SceneNodePointer child : _children) {
@@ -32,11 +36,13 @@ void SceneGraph::Shutdown(void)
 	}
 }
 
+// Adds a new node to the list of child nodes
 void SceneGraph::Add(SceneNodePointer node)
 {
 	_children.push_back(node);
 }
 
+// Removes a node from the list of child nodes and removes it from children too
 void SceneGraph::Remove(SceneNodePointer node)
 {
 	for(SceneNodePointer child : _children) {
@@ -47,6 +53,7 @@ void SceneGraph::Remove(SceneNodePointer node)
 	}
 }
 
+// Returns child node with a specified name
 SceneNodePointer SceneGraph::Find(wstring name)
 {
 	if (name == _name) {

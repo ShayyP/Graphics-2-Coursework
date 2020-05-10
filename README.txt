@@ -7,6 +7,8 @@ A - Move left
 D - Move right
 Q - Look left
 E - Look right
+F - Increase speed
+C - Decrease speed
 Left Shift - Look up (increase pitch)
 Left CTRL - Look down (decrease pitch)
 Space - Toggle freecam (detach/attach camera from plane)
@@ -17,11 +19,14 @@ X - Switch to controller input
 Gamepad controls:
 Left stick - Move
 Right stick - Look around
+Right bumper/shoulder - Increase speed
+Left bumper/shoulder - Decrease speed
 A - Toggle freecam (detach/attach camera from plane)
 Right trigger - Destroy object, ray target is centre of the screen
 X - Toggle rendering of bounding volumes
-Y - Switch to keyboard and mouse input;
+Y - Switch to keyboard and mouse input
 
 Basic instructions:
 When the player controlled plane collides with another object or the terrain,
 the simulation pauses and freecam is enabled automatically.
+Picking objects destroys them so that they cannot be collided with.

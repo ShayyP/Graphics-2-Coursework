@@ -14,10 +14,11 @@ public:
 	void CreateSceneGraph();
 	void UpdateSceneGraph();
 	void CheckForCollisions();
-	void HandleKeyboardInput();
-	void HandleControllerInput();
+	void HandleKeyboardInput(shared_ptr<Camera> nodeToMove);
+	void HandleControllerInput(shared_ptr<Camera> nodeToMove);
 	void HandleClick(float mouseX, float mouseY);
 	void OnFreeCam();
+	void ChangeMoveSpeed(float amount);
 
 private:
 	float						  _rotation = 0;
@@ -27,7 +28,9 @@ private:
 	wchar_t*					  _woodblockTexture = L"Textures/woodblock.bmp";
 	float						  _keyboardSpeedModifier = 3.0f;
 	float						  _cameraSpeedLimiter = 10000.0f;
-	float						  _mouseSpeedLimiter = 10.0f;
+	float						  _minSpeed = 0.5f;
+	float						  _movementSpeed = 1.0f;
+	float						  _maxSpeed = 5.0f;
 	InputMode					  _inputMode = InputMode::Keyboard;
 	shared_ptr<MoveableNode>	  _controlledNode;
 	bool						  _freeCam = false;
@@ -39,5 +42,6 @@ private:
 	vector<SceneNodePointer>	  _pickableNodes;
 	shared_ptr<TerrainNode>		  _terrain;
 	bool						  _crashed = false;
+	bool						  _firstUpdate = true;
 };
 

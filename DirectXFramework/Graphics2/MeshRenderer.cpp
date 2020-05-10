@@ -49,14 +49,7 @@ void MeshRenderer::RenderNode(shared_ptr<Node> node, bool renderTransparent)
 	{
 		unsigned int meshIndex = node->GetMesh(i);
 		shared_ptr<SubMesh> subMesh = _mesh->GetSubMesh(meshIndex);
-		if (subMesh->GetIsPropeller())
-		{
-			cBuffer.CompleteTransformation = XMMatrixRotationY(_mesh->GetPropellerAngle()) * cBuffer.CompleteTransformation;
-		}
-		else
-		{
-			cBuffer.CompleteTransformation = _completeTransformation;
-		}
+		cBuffer.CompleteTransformation = _completeTransformation;
 		shared_ptr<Material> material = subMesh->GetMaterial();
 		float opacity = material->GetOpacity();
 		if ((renderTransparent && opacity < 1.0f) ||
@@ -103,10 +96,7 @@ void MeshRenderer::Render()
 	XMMATRIX projectionTransformation = DirectXFramework::GetDXFramework()->GetProjectionTransformation();
 	XMMATRIX viewTransformation = DirectXFramework::GetDXFramework()->GetCamera()->GetViewMatrix();
 
-
 	_completeTransformation = XMLoadFloat4x4(&_worldTransformation) * viewTransformation * projectionTransformation;
-
-	// Draw the first cube
 
 	cBuffer.CompleteTransformation = _completeTransformation;
 	cBuffer.WorldTransformation = XMLoadFloat4x4(&_worldTransformation);
@@ -151,7 +141,7 @@ void MeshRenderer::BuildShaders()
 	ComPtr<ID3DBlob> compilationMessages = nullptr;
 
 	//Compile vertex shader
-	HRESULT hr = D3DCompileFromFile(L"TexturedShaders.hlsl",
+	HRESULT hr = D3DCompileFromFile(L"Shaders\\TexturedShaders.hlsl",
 									nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE,
 									"VShader", "vs_5_0",
 									shaderCompileFlags, 0,
@@ -168,7 +158,7 @@ void MeshRenderer::BuildShaders()
 	ThrowIfFailed(_device->CreateVertexShader(_vertexShaderByteCode->GetBufferPointer(), _vertexShaderByteCode->GetBufferSize(), NULL, _vertexShader.GetAddressOf()));
 
 	// Compile pixel shader
-	hr = D3DCompileFromFile(L"TexturedShaders.hlsl",
+	hr = D3DCompileFromFile(L"Shaders\\TexturedShaders.hlsl",
 							nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE,
 							"PShader", "ps_5_0",
 							shaderCompileFlags, 0,

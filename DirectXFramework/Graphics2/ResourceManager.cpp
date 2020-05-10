@@ -345,11 +345,6 @@ shared_ptr<Mesh> ResourceManager::LoadModelFromFile(wstring modelName)
     for (unsigned int sm = 0; sm < scene->mNumMeshes; sm++)
     {
 	    aiMesh * subMesh = scene->mMeshes[sm];
-		bool isPropeller = false;
-		if (subMesh->mNumFaces == 356)
-		{
-			//isPropeller = true;
-		}
 	    unsigned int numVertices = subMesh->mNumVertices;
 	    bool hasNormals = subMesh->HasNormals();
 	    bool hasTexCoords = subMesh->HasTextureCoords(0);
@@ -369,6 +364,7 @@ shared_ptr<Mesh> ResourceManager::LoadModelFromFile(wstring modelName)
 	    for (unsigned int i = 0; i < numVertices; i++)
 	    {
 			currentVertex->Position = XMFLOAT3(subMeshVertices->x, subMeshVertices->y, subMeshVertices->z);
+			// Save position for use when making the bounding volumes
 			positions.push_back(currentVertex->Position);
 			currentVertex->Normal = XMFLOAT3(subMeshNormals->x, subMeshNormals->y, subMeshNormals->z);
 		    subMeshVertices++;
@@ -469,7 +465,7 @@ shared_ptr<Mesh> ResourceManager::LoadModelFromFile(wstring modelName)
             material = GetMaterial(materials[subMesh->mMaterialIndex]);
         }
 		
-	    shared_ptr<SubMesh> resourceSubMesh = make_shared<SubMesh>(vertexBuffer, positions, indexBuffer, numVertices, numberOfIndices, material, isPropeller);
+	    shared_ptr<SubMesh> resourceSubMesh = make_shared<SubMesh>(vertexBuffer, positions, indexBuffer, numVertices, numberOfIndices, material);
 	    resourceMesh->AddSubMesh(resourceSubMesh);
 		delete[] modelVertices;
 		delete[] modelIndices;

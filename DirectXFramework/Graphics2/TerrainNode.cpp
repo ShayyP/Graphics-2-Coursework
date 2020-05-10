@@ -1,20 +1,16 @@
 #include "TerrainNode.h"
 
+// Completes all steps necessary for terrain to be rendered
 bool TerrainNode::Initialise()
 {
-	_device = DirectXFramework::GetDXFramework()->GetDevice();
-	_deviceContext = DirectXFramework::GetDXFramework()->GetDeviceContext();
-
 	LoadTerrainTextures();
 	BuildWaterNormals();
 	BuildGeometryBuffers();
 	GenerateBlendMap();
 	BuildBuffers();
-
 	BuildShaders();
 	BuildVertexLayout();
 	BuildConstantBuffer();
-
     BuildRendererStates();
 
 	return true;
@@ -45,13 +41,14 @@ void TerrainNode::Render()
 	_deviceContext->IASetIndexBuffer(_indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 	cBuffer.DiffuseCoefficient = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
 	cBuffer.SpecularCoefficient = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
-	cBuffer.Shininess = 3.0f;
+	cBuffer.Shininess = 2.0f;
 	cBuffer.Opacity = 1.0f;
 	_deviceContext->UpdateSubresource(_constantBuffer.Get(), 0, 0, &cBuffer, 0, 0);
 	_deviceContext->VSSetConstantBuffers(0, 1, _constantBuffer.GetAddressOf());
 	_deviceContext->PSSetConstantBuffers(0, 1, _constantBuffer.GetAddressOf());
 	_deviceContext->PSSetShaderResources(0, 1, _blendMapResourceView.GetAddressOf());
 	_deviceContext->PSSetShaderResources(1, 1, _texturesResourceView.GetAddressOf());
+	// Passes in current normal map, index uses %120 to ensure value is always between 0 and 120
 	_deviceContext->PSSetShaderResources(2, 1, _waterNormalsResourceView[_normalMap % 120].GetAddressOf());
 	_deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	_deviceContext->RSSetState(_defaultRasteriserState.Get());
@@ -88,6 +85,7 @@ void TerrainNode::BuildRendererStates()
 	ThrowIfFailed(_device->CreateRasterizerState(&rasteriserDesc, _wireframeRasteriserState.GetAddressOf()));
 }
 
+// Loads height map values from file into a vector
 bool TerrainNode::LoadHeightMap(wstring heightMapFilename)
 {
 	unsigned int mapSize = _numberOfXPoints * _numberOfZPoints;
@@ -112,13 +110,6 @@ bool TerrainNode::LoadHeightMap(wstring heightMapFilename)
 	return true;
 }
 
-float TerrainNode::Random(float min, float max)
-{
-	float random = ((float)rand()) / (float)RAND_MAX;
-	float range = max - min;
-	return (random * range) + min;
-}
-
 void TerrainNode::BuildGeometryBuffers()
 {
 	LoadHeightMap(_heightMapPath);
@@ -126,15 +117,17 @@ void TerrainNode::BuildGeometryBuffers()
 	float offsetU = 1.0f / _numberOfXPoints;
 	float offsetV = 1.0f / _numberOfZPoints;
 
+	// Loops through the grid
 	for (int x = 0; x < _numberOfXPoints - 1; x++)
 	{
 		for (int z = 0; z < _numberOfZPoints - 1; z++)
 		{
-			float U0 = Random(0.0f, 0.3f);
-			float U1 = Random(0.7f, 1.0f);
-			float V0 = Random(0.0f, 0.3f);
-			float V1 = Random(0.7f, 1.0f);
-			//								  Position         X                                    Y                                                                               Z                                     Normal                      TexCoord U  V     BlendMapTexCoord U           V                  WaterTexCoord
+			// Randomizes UV values to reduce tiling effect on textures, not applied this to water as the normal maps I used are seemless and are meant to be tiled
+			float U0 = RandomInRange(0.0f, 0.3f);
+			float U1 = RandomInRange(0.7f, 1.0f);
+			float V0 = RandomInRange(0.0f, 0.3f);
+			float V1 = RandomInRange(0.7f, 1.0f);
+			// Creates the vertices:		  Position         X                                    Y                                                                               Z                                     Normal                      TexCoord U  V     BlendMapTexCoord U           V                  WaterTexCoord
 			_vertices.push_back(TerrainVertex(XMFLOAT3((float)(x * _spacing) + _terrainStart,       _heightValues[(x * _numberOfXPoints) + z + 1] * _numberOfXPoints,       (float)((z + 1) * _spacing) + _terrainStart), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2(U0, V0), XMFLOAT2(x * offsetU,	    (z + 1) * offsetV), XMFLOAT2(0.0f, 0.0f))); // v1
 			_vertices.push_back(TerrainVertex(XMFLOAT3((float)((x + 1) * _spacing) + _terrainStart, _heightValues[((x + 1) * _numberOfXPoints) + z + 1] * _numberOfXPoints, (float)((z + 1) * _spacing) + _terrainStart), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2(U1, V0), XMFLOAT2((x + 1) * offsetU, (z + 1) * offsetV), XMFLOAT2(1.0f, 0.0f))); // v2
 			_vertices.push_back(TerrainVertex(XMFLOAT3((float)(x * _spacing) + _terrainStart,       _heightValues[(x * _numberOfXPoints) + z] * _numberOfXPoints,           (float)(z * _spacing) + _terrainStart),       XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT2(U0, V1), XMFLOAT2(x * offsetU,		 z * offsetV),		XMFLOAT2(0.0f, 1.0f))); // v3
@@ -145,6 +138,7 @@ void TerrainNode::BuildGeometryBuffers()
 			UINT v3 = v2 + 1;
 			UINT v4 = v3 + 1;
 
+			// Adds indices for the tow triangles in clockwise winding order
 			_indices.push_back(v1);
 			_indices.push_back(v2);
 			_indices.push_back(v3);
@@ -157,8 +151,10 @@ void TerrainNode::BuildGeometryBuffers()
 
 	// Calculating normals
 	int index = 0;
+	// Amount of indices we have to move to reach the next column
 	int multiplier = 4 * (_numberOfZPoints - 1);
 
+	// Loops through grid
 	for (int x = 0; x < _numberOfXPoints - 1; x++)
 	{
 		for (int z = 0; z < _numberOfZPoints - 1; z++)
@@ -232,6 +228,7 @@ void TerrainNode::BuildGeometryBuffers()
 				DirectX::XMStoreFloat3(&_vertices[index + 7].Normal, XMVectorAdd(XMLoadFloat3(&_vertices[index + 7].Normal), faceNormal));
 			}
 
+			// Increment index by 4 as there are 4 vertices per square
 			index += 4;
 		}
 	}
@@ -243,10 +240,11 @@ void TerrainNode::BuildGeometryBuffers()
 	}
 }
 
+// Creates vertex and index buffers using values calculated in BuildGeometryBuffers
 void TerrainNode::BuildBuffers()
 {
 	// Setup the structure that specifies how big the vertex 
-// buffer should be
+	// buffer should be
 	D3D11_BUFFER_DESC vertexBufferDescriptor;
 	vertexBufferDescriptor.Usage = D3D11_USAGE_IMMUTABLE;
 	vertexBufferDescriptor.ByteWidth = sizeof(TerrainVertex) * static_cast<UINT>(_vertices.size());
@@ -292,7 +290,7 @@ void TerrainNode::BuildShaders()
 	ComPtr<ID3DBlob> compilationMessages = nullptr;
 
 	//Compile vertex shader
-	HRESULT hr = D3DCompileFromFile(L"TerrainShaders.hlsl",
+	HRESULT hr = D3DCompileFromFile(L"Shaders\\TerrainShaders.hlsl",
 		nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE,
 		"VShader", "vs_5_0",
 		shaderCompileFlags, 0,
@@ -309,7 +307,7 @@ void TerrainNode::BuildShaders()
 	ThrowIfFailed(_device->CreateVertexShader(_vertexShaderByteCode->GetBufferPointer(), _vertexShaderByteCode->GetBufferSize(), NULL, _vertexShader.GetAddressOf()));
 
 	// Compile pixel shader
-	hr = D3DCompileFromFile(L"TerrainShaders.hlsl",
+	hr = D3DCompileFromFile(L"Shaders\\TerrainShaders.hlsl",
 		nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE,
 		"PShader", "ps_5_0",
 		shaderCompileFlags, 0,
@@ -333,9 +331,9 @@ void TerrainNode::BuildVertexLayout()
 	{
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT , D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT , D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 1, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT , D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 2, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT , D3D11_INPUT_PER_VERTEX_DATA, 0 }
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT , D3D11_INPUT_PER_VERTEX_DATA, 0 }, // Tex coord
+		{ "TEXCOORD", 1, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT , D3D11_INPUT_PER_VERTEX_DATA, 0 }, // Blend map tex coord
+		{ "TEXCOORD", 2, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT , D3D11_INPUT_PER_VERTEX_DATA, 0 } // Water tex coord
 	};
 
 	ThrowIfFailed(_device->CreateInputLayout(vertexDesc, ARRAYSIZE(vertexDesc), _vertexShaderByteCode->GetBufferPointer(), _vertexShaderByteCode->GetBufferSize(), _layout.GetAddressOf()));
@@ -352,22 +350,12 @@ void TerrainNode::BuildConstantBuffer()
 	ThrowIfFailed(_device->CreateBuffer(&bufferDesc, NULL, _constantBuffer.GetAddressOf()));
 }
 
-void TerrainNode::BuildTexture()
-{
-	// Load texture
-	ThrowIfFailed(CreateWICTextureFromFile(_device.Get(),
-		_deviceContext.Get(),
-		L"white.png",
-		nullptr,
-		_texture.GetAddressOf()
-	));
-}
-
 void TerrainNode::BuildWaterNormals()
 {
 	// Load water normal maps
 	for (int i = 1; i <= 120; i++)
 	{
+		// File names are integers padded with zero's to be 4 characters long
 		wstring texturePath = L"" + to_wstring(i);
 		while (texturePath.size() < 4)
 		{
@@ -382,6 +370,7 @@ void TerrainNode::BuildWaterNormals()
 			nullptr,
 			waterNormalMap.GetAddressOf()
 		));
+		// Add it to the array
 		_waterNormalsResourceView[i - 1] = waterNormalMap;
 	}
 }
@@ -482,11 +471,13 @@ void TerrainNode::GenerateBlendMap()
 	BYTE b;
 	BYTE a;
 	
+	// Heights at which to introduce certain textures
 	float fadeToGrassHeight = 0.03f;
 	float grassHeight = 0.045f;
 	float stoneHeight = 0.4f;
 	float snowHeight;
 
+	// Looping through the grid
 	for (int i = 0; i < _numberOfXPoints; i++)
 	{
 		for (int j = 0; j < _numberOfZPoints; j++)
@@ -505,8 +496,10 @@ void TerrainNode::GenerateBlendMap()
 
 			float height = _heightValues[(j * _numberOfXPoints) + i];
 			float averageSlope = 0.0f;
+			// Snow height is randomized giving a nice draping effect
 			snowHeight = RandomInRange(0.5f, 0.6f);
 
+			// Caluclates average slope amount for the square
 			if (i != _numberOfXPoints - 1 && j != _numberOfZPoints - 1)
 			{
 				float height2 = _heightValues[((j + 1) * _numberOfXPoints) + i + 1];
@@ -519,10 +512,12 @@ void TerrainNode::GenerateBlendMap()
 			{
 				if (height < fadeToGrassHeight)
 				{
+					// Use full light dirt texture
 					b = 255;
 				}
 				else
 				{
+					// Fade out light dirt texture by height
 					b = 255 - (255 * ((height - fadeToGrassHeight) / (grassHeight - fadeToGrassHeight)));
 				}
 			}
@@ -530,6 +525,7 @@ void TerrainNode::GenerateBlendMap()
 			{
 				if (averageSlope >= 0.006)
 				{
+					// Add rocks, used rock texture mixed with black snow texture to make it darker since I used normal rock texture for snow
 					g = 255;
 					a = 100;
 				}
@@ -576,11 +572,14 @@ void TerrainNode::GenerateBlendMap()
 	delete[] blendMap;
 }
 
+// Returns the height at a given point
 float TerrainNode::GetHeightAtPoint(float x, float z)
 {
+	// Get the cell we are in
 	int cellX = (int)((x - _terrainStart) / _spacing);
 	int cellZ = (int)((z - _terrainStart) / _spacing);
 
+	// Get point at start of this cell
 	float cellStartX = static_cast<float>(_terrainStart + (cellX * _spacing));
 	float cellStartZ = static_cast<float>(_terrainStart + (cellZ * _spacing));
 
@@ -588,9 +587,9 @@ float TerrainNode::GetHeightAtPoint(float x, float z)
 	XMFLOAT3 v2 = XMFLOAT3(cellStartX + 10, _heightValues[((cellX + 1) * _numberOfXPoints) + cellZ] * _numberOfXPoints, cellStartZ);
 	XMFLOAT3 other;
 
+	// Determine which triangle we are in
 	float dx = Absolute(x - cellStartX);
 	float dz = Absolute(z - cellStartZ);
-
 	if (dx > dz)
 	{
 		other = XMFLOAT3(cellStartX + 10, _heightValues[((cellX + 1) * _numberOfXPoints) + cellZ + 1] * _numberOfXPoints, cellStartZ + 10);
@@ -600,34 +599,42 @@ float TerrainNode::GetHeightAtPoint(float x, float z)
 		other = XMFLOAT3(cellStartX, _heightValues[(cellX * _numberOfXPoints) + cellZ] * _numberOfXPoints, cellStartZ);
 	}
 
+	// Get the normal of the traingle we are in
 	XMVECTOR faceNormal = XMVector3Cross(XMLoadFloat3(&other) - XMLoadFloat3(&v0), XMLoadFloat3(&v2) - XMLoadFloat3(&v0));
 	faceNormal = XMVector3Normalize(faceNormal);
 	XMFLOAT3 N;
 	DirectX::XMStoreFloat3(&N, faceNormal);
 
+	// Calculate y from this
 	float y = v0.y + ((N.x * dx + N.z * dz) / -N.y);
 
 	return y;
 }
 
+// Returns true if the given node is colliding with the terrain at all
 bool TerrainNode::NodeHitFloor(shared_ptr<SceneNode> node)
 {
 	shared_ptr<BoundingSphere> bound = dynamic_pointer_cast<BoundingSphere>(node->GetBoundingVolume());
 
+	// Loops through all sub bounds
 	for (shared_ptr<BoundingSphere> subBound : bound->GetSubBounds())
 	{
 		float radius = subBound->GetRadius();
 		XMFLOAT3 centrePos = subBound->GetCentrePos();
+		// Applies world transform to the centre pos
 		XMFLOAT4X4 centreWorldPos;
 		XMStoreFloat4x4(&centreWorldPos, XMMatrixTranslation(centrePos.x, centrePos.y, centrePos.z) * XMLoadFloat4x4(&bound->GetCombinedWorldTransformation()));
 		centrePos = XMFLOAT3(centreWorldPos._41, centreWorldPos._42, centreWorldPos._43);
 
+		// Checks all points that are within the x and z area of the bound
 		for (float x = centrePos.x - radius; x < centrePos.x + radius; x += 1)
 		{
 			for (float z = centrePos.z - radius; z < centrePos.z + radius; z += 1)
 			{
+				// Gets the height of the terrain at this point
 				float heightOfTerrain = GetHeightAtPoint(x, z);
 				float centreToTerrain = BoundingSphere::Distance(centrePos, XMFLOAT3(x, heightOfTerrain, z));
+				// If the distance from this point to the centre of the sphere is less than or equal to the radius then the node is colliding
 				if (centreToTerrain <= radius)
 				{
 					return true;

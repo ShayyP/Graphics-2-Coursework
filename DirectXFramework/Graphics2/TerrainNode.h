@@ -19,14 +19,11 @@ public:
 
 	bool LoadHeightMap(wstring heightMapFilename);
 
-	float Random(float min, float max);
-
 	void BuildGeometryBuffers();
 	void BuildBuffers();
 	void BuildShaders();
 	void BuildVertexLayout();
 	void BuildConstantBuffer();
-	void BuildTexture();
 	void BuildWaterNormals();
 
 	void LoadTerrainTextures();
@@ -42,8 +39,8 @@ private:
 	vector<TerrainVertex>			 _vertices;
 	vector<UINT>					 _indices;
 	ComPtr<ID3D11ShaderResourceView> _texture;
-	ComPtr<ID3D11Device>			 _device;
-	ComPtr<ID3D11DeviceContext>		 _deviceContext;
+	ComPtr<ID3D11Device>			 _device = DirectXFramework::GetDXFramework()->GetDevice();
+	ComPtr<ID3D11DeviceContext>		 _deviceContext = DirectXFramework::GetDXFramework()->GetDeviceContext();
 	ComPtr<ID3D11Buffer>			 _vertexBuffer;
 	ComPtr<ID3D11Buffer>			 _indexBuffer;
 	ComPtr<ID3D11VertexShader>		 _vertexShader;

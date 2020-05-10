@@ -1,5 +1,6 @@
 #include "SkyNode.h"
 
+// Makes the sky sphere and initialises it for rendering
 bool SkyNode::Initialise()
 {
 	CreateSphere(_radius, 30);
@@ -15,6 +16,7 @@ bool SkyNode::Initialise()
 
 void SkyNode::Render()
 {
+	// Moves centre of sphere to camera position to ensure we can never go out of it
 	XMVECTOR cameraPos = DirectXFramework::GetDXFramework()->GetCamera()->GetPosition();
 	XMFLOAT3 cameraPosFloat;
 	XMStoreFloat3(&cameraPosFloat, cameraPos);
@@ -22,6 +24,7 @@ void SkyNode::Render()
 	// Calculate the world x view x projection transformation
 	XMMATRIX completeTransformation = XMLoadFloat4x4(&_combinedWorldTransformation) * XMMatrixTranslation(cameraPosFloat.x, cameraPosFloat.y, cameraPosFloat.z) * DirectXFramework::GetDXFramework()->GetCamera()->GetViewMatrix() * DirectXFramework::GetDXFramework()->GetProjectionTransformation();
 
+	// Transposing the matrix stops it rotating as the camera moves
 	BasicCBUFFER cBuffer;
 	cBuffer.CompleteTransformation = XMMatrixTranspose(completeTransformation);
 
@@ -56,6 +59,7 @@ void SkyNode::Shutdown()
 {
 }
 
+// Builds the sphere vertices and indices
 void SkyNode::CreateSphere(float radius, size_t tessellation)
 {
 	_vertices.clear();
@@ -193,6 +197,7 @@ void SkyNode::BuildDepthStencilState()
 	ThrowIfFailed(_device->CreateDepthStencilState(&stencilDesc, _stencilState.GetAddressOf()));
 }
 
+// Loads the dds texture
 void SkyNode::BuildTexture()
 {
 	ThrowIfFailed(CreateDDSTextureFromFile(_device.Get(),
@@ -212,7 +217,7 @@ void SkyNode::BuildShaders()
 	ComPtr<ID3DBlob> compilationMessages = nullptr;
 
 	//Compile vertex shader
-	HRESULT hr = D3DCompileFromFile(L"SkyShader.hlsl",
+	HRESULT hr = D3DCompileFromFile(L"Shaders\\SkyShader.hlsl",
 		nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE,
 		"VS", "vs_5_0",
 		shaderCompileFlags, 0,
@@ -229,7 +234,7 @@ void SkyNode::BuildShaders()
 	ThrowIfFailed(_device->CreateVertexShader(_vertexShaderByteCode->GetBufferPointer(), _vertexShaderByteCode->GetBufferSize(), NULL, _vertexShader.GetAddressOf()));
 
 	// Compile pixel shader
-	hr = D3DCompileFromFile(L"SkyShader.hlsl",
+	hr = D3DCompileFromFile(L"Shaders\\SkyShader.hlsl",
 		nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE,
 		"PS", "ps_5_0",
 		shaderCompileFlags, 0,

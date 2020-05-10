@@ -177,7 +177,7 @@ void Cube::BuildShaders()
 	ComPtr<ID3DBlob> compilationMessages = nullptr;
 
 	//Compile vertex shader
-	HRESULT hr = D3DCompileFromFile(L"shader.hlsl",
+	HRESULT hr = D3DCompileFromFile(L"Shaders\\shader.hlsl",
 		nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE,
 		"VS", "vs_5_0",
 		shaderCompileFlags, 0,
@@ -195,7 +195,7 @@ void Cube::BuildShaders()
 	_deviceContext->VSSetShader(_vertexShader.Get(), 0, 0);
 
 	// Compile pixel shader
-	hr = D3DCompileFromFile(L"shader.hlsl",
+	hr = D3DCompileFromFile(L"Shaders\\shader.hlsl",
 		nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE,
 		"PS", "ps_5_0",
 		shaderCompileFlags, 0,

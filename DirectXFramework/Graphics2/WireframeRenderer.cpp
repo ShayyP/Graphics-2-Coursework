@@ -1,5 +1,6 @@
 #include "WireframeRenderer.h"
 
+// Completes everything needed for the wireframe to be rendered
 void WireframeRenderer::Initialise(vector<WireframeVertex> vertices, vector<UINT> indices)
 {
 	_numberOfIndices = static_cast<UINT>(indices.size());
@@ -22,7 +23,6 @@ void WireframeRenderer::Render(XMMATRIX worldTransform)
 	_deviceContext->PSSetShader(_pixelShader.Get(), 0, 0);
 	_deviceContext->IASetInputLayout(_layout.Get());
 
-	// Now render the sphere
 	UINT stride = sizeof(WireframeVertex);
 	UINT offset = 0;
 	_deviceContext->IASetVertexBuffers(0, 1, _vertexBuffer.GetAddressOf(), &stride, &offset);
@@ -33,7 +33,9 @@ void WireframeRenderer::Render(XMMATRIX worldTransform)
 	_deviceContext->VSSetConstantBuffers(0, 1, _constantBuffer.GetAddressOf());
 	_deviceContext->PSSetConstantBuffers(0, 1, _constantBuffer.GetAddressOf());
 	_deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	// Set rasteriser state
 	_deviceContext->RSSetState(_rasteriserState.Get());
+	// Now render the wireframe
 	_deviceContext->DrawIndexed(_numberOfIndices, 0, 0);
 }
 
@@ -86,7 +88,7 @@ void WireframeRenderer::BuildShaders()
 	ComPtr<ID3DBlob> compilationMessages = nullptr;
 
 	//Compile vertex shader
-	HRESULT hr = D3DCompileFromFile(L"WireframeShader.hlsl",
+	HRESULT hr = D3DCompileFromFile(L"Shaders\\WireframeShader.hlsl",
 		nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE,
 		"VS", "vs_5_0",
 		shaderCompileFlags, 0,
@@ -104,7 +106,7 @@ void WireframeRenderer::BuildShaders()
 	_deviceContext->VSSetShader(_vertexShader.Get(), 0, 0);
 
 	// Compile pixel shader
-	hr = D3DCompileFromFile(L"WireframeShader.hlsl",
+	hr = D3DCompileFromFile(L"Shaders\\WireframeShader.hlsl",
 		nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE,
 		"PS", "ps_5_0",
 		shaderCompileFlags, 0,

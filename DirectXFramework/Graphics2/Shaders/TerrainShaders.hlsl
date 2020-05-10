@@ -67,8 +67,8 @@ float4 PShader(PixelShaderInput input) : SV_TARGET
 	if (input.PositionWS.y < 1024 * 0.03)
 	{
 		float4 waterSample = WaterNormals.Sample(ss, input.WaterTexCoord);
-		adjustedNormal = float4(waterSample.r, waterSample.g, waterSample.b, 0.0f);
-		surfaceShininess = 10;
+		adjustedNormal = float4(waterSample.r, waterSample.g, waterSample.b, 1.0f);
+		surfaceShininess = 3.0f;
 	}
 
 	// Calculate diffuse lighting
